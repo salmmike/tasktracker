@@ -1,0 +1,13 @@
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+**/cmake_install.cmake
+**/CMakeFiles/
+**/CMakeCache.txt
+**/Makefile
+*.cmake
+*.a
+*.so
+*.cmake
+*.csv
+*.db

@@ -1,0 +1,425 @@
+#include <database_driver.h>
+#include <sstream>
+#include <iostream>
+
+#define TASK_ID "ID"
+#define TASK_NAME "TASKNAME"
+#define TIME_SPENT "TIMESPENT"
+#define START_TIME "START_TIME"
+#define REPEAT_TYPE "REPEATTYPE"
+#define REPEAT_INFO "REPEATINFO"
+#define TASK_STATE "TASKSTATE"
+#define TASK_COMMENT "COMMENT"
+#define TASK_BEGINNING "BEGINNING"
+#define PARENT_ID "PARENT_ID"
+#define FINISH_TIME "FINISHTIME"
+#define STATE "STATE"
+
+namespace tasktracker {
+
+std::string
+num_to_string(auto num)
+{
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
+}
+
+static int
+get_id_cb(void* data, int argc, char** argv, char** column)
+{
+    (void) column;
+    int* id = static_cast<int*>(data);
+    int id_value = 0;
+
+    for (int i = 0; i < argc; ++i) {
+        std::stringstream(argv[i]) >> id_value;
+    }
+    (*id) = id_value;
+
+    return 0;
+}
+
+static int
+s_get_task_cb(void* data, int argc, char** argv, char** column)
+{
+    (void) column;
+    auto res = static_cast<std::vector<std::unique_ptr<TaskData>>*>(data);
+    auto task = std::make_unique<TaskData>();
+
+    for (int i = 0; i < argc; ++i) {
+        switch (i)
+        {
+        case 0:
+            std::stringstream(argv[i]) >> task->id;
+            break;
+        case 1:
+            task->name = argv[i];
+            break;
+        case 2:
+            if (argv[i] != 0) {
+                std::stringstream(argv[i]) >> task->scheduled_start;
+            }
+            break;
+        case 3:
+            if (argv[i] != 0)
+                task->state = argv[i];
+            break;
+        case 4:
+            if (argv[i] != 0)
+                task->comment = argv[i];
+            break;
+        case 5:
+            if (argv[i] != 0) {
+                int value = 0;
+                std::stringstream(argv[i]) >> value;
+                task->repeat_type = static_cast<RepeatType>(value);
+            }
+            break;
+        case 6:
+            if (argv[i] != 0)
+                std::stringstream(argv[i]) >> task->repeat_info;
+            break;
+        default:
+            break;
+        }
+    }
+    res->push_back(std::move(task));
+    return 0;
+}
+
+static int
+s_get_task_instance_cb(void* data, int argc, char** argv, char** column)
+{
+    (void) column;
+    auto* res = static_cast<std::vector<std::unique_ptr<TaskInstanceData>>*>(data);
+    auto task = std::make_unique<TaskInstanceData>();
+    for (int i = 0; i < argc; ++i) {
+        switch (i)
+        {
+        case 0:
+            std::stringstream(argv[i]) >> task->id;
+            break;
+        case 1:
+            std::stringstream(argv[i]) >> task->parent_id;
+            break;
+        case 2:
+            if (argv[i] != 0) {
+                task->name = argv[i];
+            }
+            break;
+        case 3:
+            if (argv[i] != 0)
+                std::stringstream(argv[i]) >> task->scheduled_start;
+            break;
+        case 4:
+            if (argv[i] != 0)
+                std::stringstream(argv[i]) >> task->start_time;
+            break;
+        case 5:
+            if (argv[i] != 0)
+                std::stringstream(argv[i]) >> task->finish_time;
+            break;
+        case 6:
+            if (argv[i] != 0) {
+                long long value;
+                std::stringstream(argv[i]) >> value;
+                task->time_spent = static_cast<std::chrono::seconds>(value);
+            }
+            break;
+        case 7:
+            if (argv[i] != 0)
+                task->comment = argv[i];
+            break;
+        case 8:
+            if (argv[i] != 0) {
+                int value = 0;
+                std::stringstream(argv[i]) >> value;
+                task->state = static_cast<TaskState>(value);
+            }
+        default:
+            break;
+        }
+    }
+    res->push_back(std::move(task));
+    return 0;
+}
+
+std::string
+escape_quote(const std::string &str)
+{
+    auto cpy = str;
+    std::replace(begin(cpy), end(cpy), '\'', '`');
+    return cpy;
+}
+
+DatabaseDriver::DatabaseDriver(std::filesystem::path path, std::string table_name):
+    _path(path), _table(table_name)
+{
+}
+
+void
+DatabaseDriver::clear()
+{
+    _open_db();
+    auto str =
+    "DROP TABLE " + _table + ";";
+    _execute(str);
+    _close_db();
+    _make_table();
+}
+
+void
+DatabaseDriver::_execute(const std::string& statement, void* return_value,
+                            int(*callback)(void*, int, char**, char**))
+{
+    char* err = nullptr;
+    int ern = sqlite3_exec(_db, statement.c_str(), callback, return_value, &err);
+
+    if (ern != SQLITE_OK) {
+        auto exept = DatabaseErr("Executing statement\n" + statement + "\nfailed: " + err);
+        _close_db();
+        sqlite3_free(err);
+        throw exept;
+    }
+}
+
+void
+DatabaseDriver::_open_db()
+{
+    if (sqlite3_open(_path.c_str(), &_db) != SQLITE_OK) {
+        throw DatabaseErr("Database " + _path.string() + " didn't open.");
+    }
+}
+
+void
+DatabaseDriver::_close_db()
+{
+    if (_db) {
+        sqlite3_close(_db);
+    }
+}
+
+TaskDatabase::TaskDatabase(std::filesystem::path path): DatabaseDriver(path, TASKS_TABLE_NAME)
+{
+    _make_table();
+}
+
+void
+TaskDatabase::_make_table()
+{
+    _open_db();
+    const std::string str =
+        "CREATE TABLE IF NOT EXISTS " + _table + "("
+        TASK_ID"        INTEGER PRIMARY KEY, "
+        TASK_NAME"      TEXT NOT NULL, "
+        TASK_BEGINNING" INTEGER, "
+        TASK_STATE"     INTEGER, "
+        TASK_COMMENT"   TEXT, "
+        REPEAT_TYPE"    INTEGER, "
+        REPEAT_INFO"    INTEGER"
+        ");";
+
+    _execute(str);
+    _close_db();
+}
+
+int
+TaskDatabase::create_task(const std::string &task)
+{
+    _open_db();
+    auto str =
+    "INSERT INTO " + _table +
+    " VALUES(NULL, '" + escape_quote(task) +
+    "', NULL, NULL, NULL, NULL, NULL);";
+    _execute(str);
+
+    str = "SELECT last_insert_rowid();";
+    int id = 0;
+    _execute(str, &id, get_id_cb);
+    _close_db();
+    return id;
+}
+
+void
+TaskDatabase::update_task(const TaskData* task)
+{
+    _open_db();
+    auto str =
+        "UPDATE " + _table + " SET " +
+        TASK_NAME "='" + escape_quote(task->name) + "', " +
+        TASK_BEGINNING "='" + num_to_string(task->scheduled_start)  + "', " +
+        TASK_STATE "='" + escape_quote(task->state)  + "', " +
+        TASK_COMMENT "='" + escape_quote(task->comment)  + "', " +
+        REPEAT_TYPE "='" + num_to_string(static_cast<int>(task->repeat_type))  + "', " +
+        REPEAT_INFO "='" + num_to_string(task->repeat_info)  + "' " +
+        "WHERE " TASK_ID "=" + num_to_string(task->id) + ";";
+
+    _execute(str);
+    _close_db();
+
+}
+
+void
+TaskDatabase::delete_task(const TaskData* task)
+{
+    _open_db();
+    std::string str = "DELETE FROM " + _table +
+                      " WHERE " TASK_ID "=" + num_to_string(task->id) + ";";
+
+    _execute(str);
+    _close_db();
+}
+
+std::vector<std::unique_ptr<TaskData>>
+TaskDatabase::get_tasks(const std::string &task)
+{
+    std::string str = "SELECT * FROM " + _table;
+    std::vector<std::unique_ptr<TaskData>> res;
+
+    if (!task.empty()) {
+        str += " WHERE ";
+        str += (std::string(TASK_NAME) + "='" + task + "'");
+    }
+    str += ";";
+
+    _open_db();
+    _execute(str, &res, s_get_task_cb);
+    _close_db();
+
+    return res;
+}
+
+std::unique_ptr<TaskData>
+TaskDatabase::get_task(int id)
+{
+    std::string query = "SELECT * FROM " + _table + " WHERE " TASK_ID "='" + num_to_string(id) + "';";
+    std::vector<std::unique_ptr<TaskData>> result;
+
+    _open_db();
+    _execute(query, &result, s_get_task_cb);
+    _close_db();
+
+    if (result.size() == 1) {
+        return std::move(result.at(0));
+    }
+
+    return nullptr;
+}
+
+TaskInstanceDatabase::TaskInstanceDatabase(std::filesystem::path path): DatabaseDriver(path, TASK_INSTANCES_TABLE_NAME)
+{
+    _make_table();
+}
+
+void
+TaskInstanceDatabase::create_task(const int &parent_task, const std::string& uid, const std::string &name) noexcept(false)
+{
+    _open_db();
+    auto str =
+    "INSERT INTO " + _table +
+    " VALUES('" + escape_quote(uid) + "', '" +
+    num_to_string(parent_task) +"', '" +
+    name + "', " +
+    "NULL, NULL, NULL, NULL, NULL, NULL);";
+    _execute(str);
+    _close_db();
+}
+
+void
+TaskInstanceDatabase::update_task(const TaskInstanceData *task) noexcept(false)
+{
+    _open_db();
+    auto str =
+        "UPDATE " + _table + " SET " +
+        TASK_NAME "='" + escape_quote(task->name) + "', " +
+        TASK_BEGINNING "='" + num_to_string(task->scheduled_start) + "', " +
+        START_TIME"='" + num_to_string(task->start_time) + "', " +
+        FINISH_TIME "='" + num_to_string(task->finish_time)  + "', " +
+        TIME_SPENT "='" + num_to_string(task->time_spent.count())  + "', " +
+        TASK_COMMENT "='" + escape_quote(task->comment) + "', " +
+        TASK_STATE "='" + num_to_string(static_cast<int>(task->state)) + "' " +
+        "WHERE " TASK_ID "='" + task->id + "';";
+
+    _execute(str);
+    _close_db();
+}
+
+void
+TaskInstanceDatabase::delete_task(const TaskInstanceData *task) noexcept(false)
+{
+    _open_db();
+    std::string str = "DELETE FROM " + _table +
+                      " WHERE " TASK_ID "=" + num_to_string(task->id) + ";";
+
+    _execute(str);
+    _close_db();
+}
+
+std::vector<std::unique_ptr<TaskInstanceData>>
+TaskInstanceDatabase::get_tasks(const size_t parent_id, bool not_done) noexcept(false)
+{
+    std::string str = "SELECT * FROM " + _table;
+    std::vector<std::unique_ptr<TaskInstanceData>> res;
+
+    if (parent_id > 0 || not_done) {
+        str += " WHERE ";
+    }
+
+    if (parent_id > 0) {
+        str += (std::string(PARENT_ID) + "='" + num_to_string(parent_id) + "'");
+        if (not_done) {
+            str += " AND ";
+        }
+    }
+    if (not_done) {
+        str += (std::string(TASK_STATE) + " NOT 'DONE'");
+    }
+    str += ";";
+
+    _open_db();
+    _execute(str, &res, s_get_task_cb);
+    _close_db();
+
+    return res;
+}
+
+std::unique_ptr<TaskInstanceData>
+TaskInstanceDatabase::get_task(const std::string&  id) noexcept(false)
+{
+    std::string query = "SELECT * FROM " + _table + " WHERE " TASK_ID "='" + escape_quote(id) + "';";
+    std::vector<std::unique_ptr<TaskInstanceData>> result;
+
+    _open_db();
+    _execute(query, &result, s_get_task_instance_cb);
+    _close_db();
+
+    if (result.size() == 1) {
+        return std::move(result.at(0));
+    }
+
+    return nullptr;
+}
+
+void
+TaskInstanceDatabase::_make_table()
+{
+    _open_db();
+    const std::string str =
+        "CREATE TABLE IF NOT EXISTS " + _table + "("
+        TASK_ID"            STRING PRIMARY KEY, "
+        PARENT_ID"          INTEGER, "
+        TASK_NAME"          TEXT NOT NULL, "
+        TASK_BEGINNING"     INTEGER, "
+        START_TIME"         INTEGER, "
+        FINISH_TIME"        INTEGER, "
+        TIME_SPENT"         INTEGER, "
+        TASK_COMMENT"       TEXT, "
+        TASK_STATE"         INTEGER"
+    ");";
+
+    _execute(str);
+    _close_db();
+}
+
+}
