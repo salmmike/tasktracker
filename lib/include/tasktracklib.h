@@ -26,9 +26,12 @@
 
 namespace tasktracker {
 
+/// @brief Class for keeping track of tasks.
 class TaskTracker
 {
 public:
+    /// @brief Create a TaskTracker
+    /// @param path path to the file used as database
     explicit TaskTracker(std::filesystem::path path);
     ~TaskTracker();
 
@@ -38,9 +41,15 @@ public:
     std::vector<TaskInstance*> get_task_instances(std::chrono::year_month_day date);
     std::vector<TaskInstance*> get_task_instances(tm date);
 
-    void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, std::chrono::year_month_day start_date, std::chrono::hours hour, std::chrono::minutes mins);
+    /// @brief Add a new task
+    /// @param name name of the task
+    /// @param repeat_type RepeatType enum
+    /// @param repeat_info repeat info, handled based on repeat_type
+    /// @param start_time First date of the task and the time when the task should be scheduled.
     void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, tm start_time);
+    void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, std::chrono::year_month_day start_date, std::chrono::hours hour, std::chrono::minutes mins);
 
+    /// @brief Clear the database used by this TaskTracker
     void clear();
 
 private:
