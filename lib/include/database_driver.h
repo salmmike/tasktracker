@@ -56,15 +56,15 @@ public:
     void clear() noexcept(false);
 
 protected:
-    virtual void _make_table()  noexcept(false) {};
-    void _open_db() noexcept(false);
-    void _close_db() noexcept(false);
-    void _execute(const std::string& statement, void* return_value=NULL,
+    virtual void m_make_table()  noexcept(false) {};
+    void m_open_db() noexcept(false);
+    void m_close_db() noexcept(false);
+    void m_execute(const std::string& statement, void* return_value=NULL,
                     int(*callback)(void*, int, char**, char**)=NULL) noexcept(false);
 
-    const std::filesystem::path _path;
-    sqlite3* _db {nullptr};
-    const std::string _table;
+    const std::filesystem::path m_path;
+    sqlite3* m_db {nullptr};
+    const std::string m_table;
 };
 
 /// @brief Interraction handler with Task SQL database for Task data,
@@ -110,7 +110,7 @@ public:
     std::unique_ptr<TaskData> get_task(int id) noexcept(false);
 
 private:
-    void _make_table() override;
+    void m_make_table() override;
 };
 
 
@@ -159,10 +159,10 @@ public:
     std::unique_ptr<TaskInstanceData> get_task(const std::string& id) noexcept(false);
 
 private:
-    void _make_table() override;
+    void m_make_table() override;
 
 };
 
 }
 
-#endif
+#endif /* DATABASE_DRIVER_H */

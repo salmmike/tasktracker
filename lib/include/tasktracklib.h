@@ -53,22 +53,22 @@ public:
     void clear();
 
 private:
-    const std::unique_ptr<TaskInstanceDatabase> _task_instance_db;
-    const std::unique_ptr<TaskDatabase> _task_db;
+    const std::unique_ptr<TaskInstanceDatabase> m_task_instance_db;
+    const std::unique_ptr<TaskDatabase> m_task_db;
 
-    std::vector<std::unique_ptr<TaskData>> _task_data;
-    std::map<std::string, std::unique_ptr<TaskInstance>> _task_instances;
-    std::vector<std::unique_ptr<Task>> _tasks;
+    std::vector<std::unique_ptr<TaskData>> m_task_data;
+    std::map<std::string, std::unique_ptr<TaskInstance>> m_task_instances;
+    std::vector<std::unique_ptr<Task>> m_tasks;
 
     /// @brief Create a unique identifier for a TaskInstance based on the Task and it's date
     /// @param day the scheduled date
     /// @return 
-    std::string _create_identifier(std::chrono::year_month_day day, Task* task);
-    std::string _create_identifier(tm day, Task* task);
+    std::string m_create_identifier(std::chrono::year_month_day day, Task* task);
+    std::string m_create_identifier(tm day, Task* task);
 
-    void _create_task_intance(const std::unique_ptr<Task>& task, tm date, const std::string& instance_id);
+    void m_create_task_intance(const std::unique_ptr<Task>& task, tm date, const std::string& instance_id);
 
-    void _load_tasks();
+    void m_load_tasks();
 };
 }
 

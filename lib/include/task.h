@@ -68,8 +68,8 @@ public:
     const TaskInstanceData* get_data();
 
 private:
-    std::unique_ptr<TaskInstanceData> _data;
-    TaskInstanceDatabase* _db;
+    std::unique_ptr<TaskInstanceData> m_data;
+    TaskInstanceDatabase* m_db;
 };
 
 class Task
@@ -95,8 +95,8 @@ public:
     bool occurs(std::chrono::year_month_day day);
 
 private:
-    TaskData* _data;
-    TaskDatabase* _db;
+    TaskData* m_data;
+    TaskDatabase* m_db;
 
 };
 

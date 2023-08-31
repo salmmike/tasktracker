@@ -154,63 +154,63 @@ escape_quote(const std::string &str)
 }
 
 DatabaseDriver::DatabaseDriver(std::filesystem::path path, std::string table_name):
-    _path(path), _table(table_name)
+    m_path(path), m_table(table_name)
 {
 }
 
 void
 DatabaseDriver::clear()
 {
-    _open_db();
+    m_open_db();
     auto str =
-    "DROP TABLE " + _table + ";";
-    _execute(str);
-    _close_db();
-    _make_table();
+    "DROP TABLE " + m_table + ";";
+    m_execute(str);
+    m_close_db();
+    m_make_table();
 }
 
 void
-DatabaseDriver::_execute(const std::string& statement, void* return_value,
+DatabaseDriver::m_execute(const std::string& statement, void* return_value,
                             int(*callback)(void*, int, char**, char**))
 {
     char* err = nullptr;
-    int ern = sqlite3_exec(_db, statement.c_str(), callback, return_value, &err);
+    int ern = sqlite3_exec(m_db, statement.c_str(), callback, return_value, &err);
 
     if (ern != SQLITE_OK) {
         auto exept = DatabaseErr("Executing statement\n" + statement + "\nfailed: " + err);
-        _close_db();
+        m_close_db();
         sqlite3_free(err);
         throw exept;
     }
 }
 
 void
-DatabaseDriver::_open_db()
+DatabaseDriver::m_open_db()
 {
-    if (sqlite3_open(_path.c_str(), &_db) != SQLITE_OK) {
-        throw DatabaseErr("Database " + _path.string() + " didn't open.");
+    if (sqlite3_open(m_path.c_str(), &m_db) != SQLITE_OK) {
+        throw DatabaseErr("Database " + m_path.string() + " didn't open.");
     }
 }
 
 void
-DatabaseDriver::_close_db()
+DatabaseDriver::m_close_db()
 {
-    if (_db) {
-        sqlite3_close(_db);
+    if (m_db) {
+        sqlite3_close(m_db);
     }
 }
 
 TaskDatabase::TaskDatabase(std::filesystem::path path): DatabaseDriver(path, TASKS_TABLE_NAME)
 {
-    _make_table();
+    m_make_table();
 }
 
 void
-TaskDatabase::_make_table()
+TaskDatabase::m_make_table()
 {
-    _open_db();
+    m_open_db();
     const std::string str =
-        "CREATE TABLE IF NOT EXISTS " + _table + "("
+        "CREATE TABLE IF NOT EXISTS " + m_table + "("
         TASK_ID"        INTEGER PRIMARY KEY, "
         TASK_NAME"      TEXT NOT NULL, "
         TASK_BEGINNING" INTEGER, "
@@ -220,33 +220,33 @@ TaskDatabase::_make_table()
         REPEAT_INFO"    INTEGER"
         ");";
 
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 }
 
 int
 TaskDatabase::create_task(const std::string &task)
 {
-    _open_db();
+    m_open_db();
     auto str =
-    "INSERT INTO " + _table +
+    "INSERT INTO " + m_table +
     " VALUES(NULL, '" + escape_quote(task) +
     "', NULL, NULL, NULL, NULL, NULL);";
-    _execute(str);
+    m_execute(str);
 
     str = "SELECT last_insert_rowid();";
     int id = 0;
-    _execute(str, &id, get_id_cb);
-    _close_db();
+    m_execute(str, &id, get_id_cb);
+    m_close_db();
     return id;
 }
 
 void
 TaskDatabase::update_task(const TaskData* task)
 {
-    _open_db();
+    m_open_db();
     auto str =
-        "UPDATE " + _table + " SET " +
+        "UPDATE " + m_table + " SET " +
         TASK_NAME "='" + escape_quote(task->name) + "', " +
         TASK_BEGINNING "='" + num_to_string(task->scheduled_start)  + "', " +
         TASK_STATE "='" + escape_quote(task->state)  + "', " +
@@ -255,26 +255,26 @@ TaskDatabase::update_task(const TaskData* task)
         REPEAT_INFO "='" + num_to_string(task->repeat_info)  + "' " +
         "WHERE " TASK_ID "=" + num_to_string(task->id) + ";";
 
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 
 }
 
 void
 TaskDatabase::delete_task(const TaskData* task)
 {
-    _open_db();
-    std::string str = "DELETE FROM " + _table +
+    m_open_db();
+    std::string str = "DELETE FROM " + m_table +
                       " WHERE " TASK_ID "=" + num_to_string(task->id) + ";";
 
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 }
 
 std::vector<std::unique_ptr<TaskData>>
 TaskDatabase::get_tasks(const std::string &task)
 {
-    std::string str = "SELECT * FROM " + _table;
+    std::string str = "SELECT * FROM " + m_table;
     std::vector<std::unique_ptr<TaskData>> res;
 
     if (!task.empty()) {
@@ -283,9 +283,9 @@ TaskDatabase::get_tasks(const std::string &task)
     }
     str += ";";
 
-    _open_db();
-    _execute(str, &res, s_get_task_cb);
-    _close_db();
+    m_open_db();
+    m_execute(str, &res, s_get_task_cb);
+    m_close_db();
 
     return res;
 }
@@ -293,12 +293,12 @@ TaskDatabase::get_tasks(const std::string &task)
 std::unique_ptr<TaskData>
 TaskDatabase::get_task(int id)
 {
-    std::string query = "SELECT * FROM " + _table + " WHERE " TASK_ID "='" + num_to_string(id) + "';";
+    std::string query = "SELECT * FROM " + m_table + " WHERE " TASK_ID "='" + num_to_string(id) + "';";
     std::vector<std::unique_ptr<TaskData>> result;
 
-    _open_db();
-    _execute(query, &result, s_get_task_cb);
-    _close_db();
+    m_open_db();
+    m_execute(query, &result, s_get_task_cb);
+    m_close_db();
 
     if (result.size() == 1) {
         return std::move(result.at(0));
@@ -309,29 +309,29 @@ TaskDatabase::get_task(int id)
 
 TaskInstanceDatabase::TaskInstanceDatabase(std::filesystem::path path): DatabaseDriver(path, TASK_INSTANCES_TABLE_NAME)
 {
-    _make_table();
+    m_make_table();
 }
 
 void
 TaskInstanceDatabase::create_task(const int &parent_task, const std::string& uid, const std::string &name) noexcept(false)
 {
-    _open_db();
+    m_open_db();
     auto str =
-    "INSERT INTO " + _table +
+    "INSERT INTO " + m_table +
     " VALUES('" + escape_quote(uid) + "', '" +
     num_to_string(parent_task) +"', '" +
     name + "', " +
     "NULL, NULL, NULL, NULL, NULL, NULL);";
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 }
 
 void
 TaskInstanceDatabase::update_task(const TaskInstanceData *task) noexcept(false)
 {
-    _open_db();
+    m_open_db();
     auto str =
-        "UPDATE " + _table + " SET " +
+        "UPDATE " + m_table + " SET " +
         TASK_NAME "='" + escape_quote(task->name) + "', " +
         TASK_BEGINNING "='" + num_to_string(task->scheduled_start) + "', " +
         START_TIME"='" + num_to_string(task->start_time) + "', " +
@@ -341,25 +341,25 @@ TaskInstanceDatabase::update_task(const TaskInstanceData *task) noexcept(false)
         TASK_STATE "='" + num_to_string(static_cast<int>(task->state)) + "' " +
         "WHERE " TASK_ID "='" + task->id + "';";
 
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 }
 
 void
 TaskInstanceDatabase::delete_task(const TaskInstanceData *task) noexcept(false)
 {
-    _open_db();
-    std::string str = "DELETE FROM " + _table +
+    m_open_db();
+    std::string str = "DELETE FROM " + m_table +
                       " WHERE " TASK_ID "=" + num_to_string(task->id) + ";";
 
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 }
 
 std::vector<std::unique_ptr<TaskInstanceData>>
 TaskInstanceDatabase::get_tasks(const size_t parent_id, bool not_done) noexcept(false)
 {
-    std::string str = "SELECT * FROM " + _table;
+    std::string str = "SELECT * FROM " + m_table;
     std::vector<std::unique_ptr<TaskInstanceData>> res;
 
     if (parent_id > 0 || not_done) {
@@ -377,9 +377,9 @@ TaskInstanceDatabase::get_tasks(const size_t parent_id, bool not_done) noexcept(
     }
     str += ";";
 
-    _open_db();
-    _execute(str, &res, s_get_task_cb);
-    _close_db();
+    m_open_db();
+    m_execute(str, &res, s_get_task_cb);
+    m_close_db();
 
     return res;
 }
@@ -387,12 +387,12 @@ TaskInstanceDatabase::get_tasks(const size_t parent_id, bool not_done) noexcept(
 std::unique_ptr<TaskInstanceData>
 TaskInstanceDatabase::get_task(const std::string&  id) noexcept(false)
 {
-    std::string query = "SELECT * FROM " + _table + " WHERE " TASK_ID "='" + escape_quote(id) + "';";
+    std::string query = "SELECT * FROM " + m_table + " WHERE " TASK_ID "='" + escape_quote(id) + "';";
     std::vector<std::unique_ptr<TaskInstanceData>> result;
 
-    _open_db();
-    _execute(query, &result, s_get_task_instance_cb);
-    _close_db();
+    m_open_db();
+    m_execute(query, &result, s_get_task_instance_cb);
+    m_close_db();
 
     if (result.size() == 1) {
         return std::move(result.at(0));
@@ -402,11 +402,11 @@ TaskInstanceDatabase::get_task(const std::string&  id) noexcept(false)
 }
 
 void
-TaskInstanceDatabase::_make_table()
+TaskInstanceDatabase::m_make_table()
 {
-    _open_db();
+    m_open_db();
     const std::string str =
-        "CREATE TABLE IF NOT EXISTS " + _table + "("
+        "CREATE TABLE IF NOT EXISTS " + m_table + "("
         TASK_ID"            STRING PRIMARY KEY, "
         PARENT_ID"          INTEGER, "
         TASK_NAME"          TEXT NOT NULL, "
@@ -418,8 +418,8 @@ TaskInstanceDatabase::_make_table()
         TASK_STATE"         INTEGER"
     ");";
 
-    _execute(str);
-    _close_db();
+    m_execute(str);
+    m_close_db();
 }
 
 }

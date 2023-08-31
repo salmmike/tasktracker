@@ -20,7 +20,7 @@ static tm s_get_nth_weekday_of_month(int day, int week, tm schedule_tm)
 namespace tasktracker {
 
 TaskInstance::TaskInstance(std::unique_ptr<TaskInstanceData> &&data, TaskInstanceDatabase *db):
-    _data(std::move(data)), _db(db)
+    m_data(std::move(data)), m_db(db)
 {
 }
 
@@ -30,66 +30,66 @@ TaskInstance::~TaskInstance()
 
 std::string TaskInstance::get_name()
 {
-    return _data->name;
+    return m_data->name;
 }
 
 std::string TaskInstance::get_uid()
 {
-    return _data->id;
+    return m_data->id;
 }
 
 void
 TaskInstance::start_task()
 {
-    _data->state = TaskState::Started;
-    _db->update_task(_data.get());
+    m_data->state = TaskState::Started;
+    m_db->update_task(m_data.get());
 }
 void
 TaskInstance::skip_task()
 {
-    _data->state = TaskState::Skipped;
-    _db->update_task(_data.get());
+    m_data->state = TaskState::Skipped;
+    m_db->update_task(m_data.get());
 }
 void
 TaskInstance::finish_task()
 {
-    _data->state = TaskState::Finished;
-    _db->update_task(_data.get());
+    m_data->state = TaskState::Finished;
+    m_db->update_task(m_data.get());
 }
 
 time_t
 TaskInstance::get_scheduled_time()
 {
-    return _data->scheduled_start;
+    return m_data->scheduled_start;
 }
 
 std::chrono::seconds
 TaskInstance::get_time_spent()
 {
-    return _data->time_spent;
+    return m_data->time_spent;
 }
 
 void
 TaskInstance::set_comment(const std::string &str)
 {
-    _data->comment = str;
-    _db->update_task(_data.get());
+    m_data->comment = str;
+    m_db->update_task(m_data.get());
 }
 
 std::string
 TaskInstance::get_comment()
 {
-    return _data->comment;
+    return m_data->comment;
 }
 
 const TaskInstanceData*
 TaskInstance::get_data()
 {
-    return _data.get();
+    return m_data.get();
 }
 
 Task::Task(TaskData *data, TaskDatabase *db):
-    _data(data), _db(db)
+    m_data(data), m_db(db)
 {
 }
 
@@ -99,7 +99,7 @@ Task::~Task()
 
 ScheduledTime Task::get_scheduled_start_time()
 {
-    tm *time_struct = localtime(&_data->scheduled_start);
+    tm *time_struct = localtime(&m_data->scheduled_start);
 
     ScheduledTime time;
     time.hours = std::chrono::hours(time_struct->tm_hour);
@@ -109,17 +109,17 @@ ScheduledTime Task::get_scheduled_start_time()
 
 std::string Task::get_name()
 {
-    return _data->name;
+    return m_data->name;
 }
 
 int Task::get_id()
 {
-    return _data->id;
+    return m_data->id;
 }
 
 std::string Task::get_comment()
 {
-    return _data->comment;
+    return m_data->comment;
 }
 
 bool Task::occurs(std::chrono::year_month_day day)
@@ -137,10 +137,10 @@ bool Task::occurs(std::chrono::year_month_day day)
 
 bool Task::occurs(tm day)
 {
-    tm schedule_tm = *localtime(&_data->scheduled_start);
-    int repeat_info = _data->repeat_info;
+    tm schedule_tm = *localtime(&m_data->scheduled_start);
+    int repeat_info = m_data->repeat_info;
 
-    switch (_data->repeat_type)
+    switch (m_data->repeat_type)
     {
         case RepeatType::Monthly:
             return day.tm_mday == repeat_info;
@@ -172,7 +172,7 @@ bool Task::occurs(tm day)
             return false;
         }
         case RepeatType::WithInterval:
-            time_t start_day = _data->scheduled_start;
+            time_t start_day = m_data->scheduled_start;
             tm start_day_tm = *localtime(&start_day);
             start_day_tm.tm_hour = 0;
             start_day_tm.tm_min = 0;
