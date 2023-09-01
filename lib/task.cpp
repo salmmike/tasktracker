@@ -122,6 +122,12 @@ std::string Task::get_comment()
     return m_data->comment;
 }
 
+void Task::set_comment(const std::string &comment)
+{
+    m_data->comment = comment;
+    m_db->update_task(m_data);
+}
+
 bool Task::occurs(std::chrono::year_month_day day)
 {
     tm time {};

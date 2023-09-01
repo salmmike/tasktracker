@@ -1,3 +1,9 @@
+
+set(CMAKE_CXX_CLANG_TIDY
+    clang-tidy;
+    -header-filter=.;
+    -extra-arg=-std=c++20)
+
 set(INCDIR ${CMAKE_CURRENT_LIST_DIR}/include/)
 set(LIBHEADERS
     ${INCDIR}database_driver.h

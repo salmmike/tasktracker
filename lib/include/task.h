@@ -19,7 +19,7 @@
 #ifndef TASK_H
 #define TASK_H
 
-#include <database_driver.h>
+#include "database_driver.h"
 
 namespace tasktracker {
 
@@ -82,11 +82,22 @@ public:
     /// @return ScheduledTime struct
     ScheduledTime get_scheduled_start_time();
 
+    /// @brief get the name of the task
+    /// @return name as a string
     std::string get_name();
 
+    /// @brief get the unique id
+    /// @return unique id
     int get_id();
 
+
+    /// @brief get Task comment
+    /// @return saved comment as string
     std::string get_comment();
+
+    /// @brief set the task comment
+    /// @param comment the new comment
+    void set_comment(const std::string& comment);
 
     /// @brief Check if Task occurs on given day
     /// @param day the day to check
@@ -97,7 +108,6 @@ public:
 private:
     TaskData* m_data;
     TaskDatabase* m_db;
-
 };
 
 }

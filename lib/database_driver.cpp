@@ -1,6 +1,7 @@
 #include <database_driver.h>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 #define TASK_ID "ID"
 #define TASK_NAME "TASKNAME"
@@ -158,6 +159,11 @@ DatabaseDriver::DatabaseDriver(std::filesystem::path path, std::string table_nam
 {
 }
 
+void DatabaseDriver::init() noexcept(false)
+{
+    m_make_table();
+}
+
 void
 DatabaseDriver::clear()
 {
@@ -202,7 +208,6 @@ DatabaseDriver::m_close_db()
 
 TaskDatabase::TaskDatabase(std::filesystem::path path): DatabaseDriver(path, TASKS_TABLE_NAME)
 {
-    m_make_table();
 }
 
 void
@@ -309,7 +314,6 @@ TaskDatabase::get_task(int id)
 
 TaskInstanceDatabase::TaskInstanceDatabase(std::filesystem::path path): DatabaseDriver(path, TASK_INSTANCES_TABLE_NAME)
 {
-    m_make_table();
 }
 
 void

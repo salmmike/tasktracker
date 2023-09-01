@@ -7,6 +7,8 @@ TaskTracker::TaskTracker(std::filesystem::path path):
     m_task_instance_db(std::make_unique<TaskInstanceDatabase>(path)),
     m_task_db(std::make_unique<TaskDatabase>(path))
 {
+    m_task_instance_db->init();
+    m_task_db->init();
     m_load_tasks();
 }
 
@@ -128,7 +130,7 @@ void TaskTracker::m_load_tasks()
     m_task_data.clear();
     m_tasks.clear();
 
-    m_task_data = std::move(m_task_db->get_tasks());
+    m_task_data = m_task_db->get_tasks();
 
     for (const auto& task_data : m_task_data) {
         m_tasks.push_back(std::make_unique<Task>(task_data.get(), m_task_db.get()));

@@ -43,6 +43,8 @@ public:
 
 private:
     const std::string message;
+
+    using std::exception::what;
 };
 
 class DatabaseDriver
@@ -50,6 +52,7 @@ class DatabaseDriver
 public:
     explicit DatabaseDriver(std::filesystem::path path, std::string table_name);
     virtual ~DatabaseDriver() {};
+    void init() noexcept(false);
 
     /// @brief Clear the whole task database.
     /// @throws DatabaseErr on exception.
@@ -78,6 +81,7 @@ public:
     /// @throws DatabaseErr on exception.
     explicit TaskDatabase(std::filesystem::path path) noexcept(false);
     ~TaskDatabase() {};
+    using DatabaseDriver::init;
 
     /// @brief Create a new task
     /// @param task name of the task
@@ -126,6 +130,7 @@ public:
     explicit TaskInstanceDatabase(std::filesystem::path path) noexcept(false);
     ~TaskInstanceDatabase() {};
 
+    using DatabaseDriver::init;
     using DatabaseDriver::clear;
 
     /// @brief Create a new TaskInstance
