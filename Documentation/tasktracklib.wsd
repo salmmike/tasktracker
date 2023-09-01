@@ -1,0 +1,15 @@
+@startuml tasktracker_structure
+interface tasktracker_api
+
+package tasktracklib {
+database TaskInstanceDatabase
+database TaskDatabase
+
+component database_driver
+
+TaskDatabase -down-> database_driver
+TaskInstanceDatabase -down-> database_driver
+database_driver -down-> tasktracker_api
+}
+
+@enduml
