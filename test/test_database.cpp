@@ -12,6 +12,7 @@ TEST(NAME, test_create_database)
 {
     try {
         tasktracker::TaskDatabase db(TESTDBFILE);
+        db.init();
         db.create_task(TESTTASKNAME);
         db.clear();
     } catch (tasktracker::DatabaseErr &err) {
@@ -23,6 +24,7 @@ TEST(NAME, test_get_task)
 {
     try {
         tasktracker::TaskDatabase db(TESTDBFILE);
+        db.init();
         db.clear();
         db.create_task(TESTTASKNAME);
         auto tasks = db.get_tasks();
@@ -37,6 +39,7 @@ TEST(NAME, test_clear_db)
 
     try {
         tasktracker::TaskDatabase db(TESTDBFILE);
+        db.init();
         db.clear();
         db.create_task(TESTTASKNAME);
         auto tasks = db.get_tasks();
@@ -56,6 +59,7 @@ TEST(NAME, test_delete_task)
 
     try {
         tasktracker::TaskDatabase db(TESTDBFILE);
+        db.init();
         db.clear();
 
         int task_count = 10;
@@ -80,6 +84,7 @@ TEST(NAME, test_task_creation)
 {
     try {
         tasktracker::TaskDatabase db(TESTDBFILE);
+        db.init();
         db.clear();
         for (int i = 0; i < 100; ++i) {
             ASSERT_EQ(db.create_task(TESTTASKNAME), i + 1);
@@ -101,6 +106,7 @@ TEST(NAME, test_task_update)
 {
     try {
         tasktracker::TaskDatabase db(TESTDBFILE);
+        db.init();
         const std::string new_name = "new_name";
         const std::string new_state = "new_state";
         const std::string new_comment = "test comment";
@@ -146,6 +152,7 @@ TEST(NAME, test_taskinstance_update)
     try {
         std::string test_task_id = "testabc123";
         tasktracker::TaskInstanceDatabase db(TESTDBFILE);
+        db.init();
         db.create_task(1, test_task_id, TESTTASKNAME);
 
         const time_t new_scheduled_start = 1000;
