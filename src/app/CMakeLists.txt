@@ -11,7 +11,7 @@ add_executable(tasktracker
 qt_add_qml_module(tasktracker
     URI tasktrackerqml
     VERSION 1.0
-    QML_FILES main.qml
+    QML_FILES qml/Main.qml
 )
 
 target_link_libraries(tasktracker
