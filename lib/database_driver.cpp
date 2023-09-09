@@ -177,7 +177,7 @@ DatabaseDriver::clear()
 
 void
 DatabaseDriver::m_execute(const std::string& statement, void* return_value,
-                            int(*callback)(void*, int, char**, char**))
+                          int(*callback)(void*, int, char**, char**))
 {
     char* err = nullptr;
     int ern = sqlite3_exec(m_db, statement.c_str(), callback, return_value, &err);

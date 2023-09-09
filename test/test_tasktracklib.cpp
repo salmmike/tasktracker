@@ -17,10 +17,6 @@ std::string format_date(tm* date, const std::string& str="")
     strftime(buffer, 26, "%a %Y-%m-%d %H:%M:%S", date);
     return str + buffer;
 }
-static void print_date(tm* date, const std::string& str="")
-{
-    std::cout << format_date(date, str) << "\n";
-}
 
 tm add_days(int days, tm date)
 {
