@@ -11,3 +11,17 @@ Makefile
 *.cmake
 *.csv
 *.db
+.vscode/
+build/**
+_deps/
+Testing/
+CMakeCache.txt.prev
+CMakeLists.txt.user
+build-src-Desktop-Debug/
+src/CMakeLists.txt.user
+src/app/tasktracker
+src/tasktracker
+test/test_database
+test/test_tasks
+test/test_tasktracklib
+
