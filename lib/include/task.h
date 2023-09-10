@@ -48,8 +48,12 @@ public:
     /// @brief Set the task state to finished, log finish time.
     void finish_task();
 
-    /// @brief get the time when the task is scheduled to start
-    /// @return the of scheduled start
+    /// @brief get the date and time when the task is scheduled to start
+    /// @return the date and time of scheduled start
+    time_t get_scheduled_datetime();
+
+    /// @brief get hours and minutes of the start time
+    /// @return hours and minutes of the start time in a time_t struct
     time_t get_scheduled_time();
 
     /// @brief Get time spent on the task

@@ -37,7 +37,7 @@ public:
 
     /// @brief get tasks scheduled for date. This object must not leave scope while the results are used.
     /// @param date the date when the tasks are scheduled
-    /// @return list of TaskInstance objects.
+    /// @return list of TaskInstance objects sorted by the start time.
     std::vector<TaskInstance*> get_task_instances(std::chrono::year_month_day date);
     std::vector<TaskInstance*> get_task_instances(tm date);
 

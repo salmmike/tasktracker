@@ -71,7 +71,7 @@ TEST(NAME, test_task_repeat_interval)
     ASSERT_EQ(tasks.size(), 1);
     auto task = tasks[0];
 
-    auto start_time_t = task->get_scheduled_time();
+    auto start_time_t = task->get_scheduled_datetime();
 
     tm task_start_time = *localtime(&start_time_t);
 
@@ -84,7 +84,7 @@ TEST(NAME, test_task_repeat_interval)
     ASSERT_EQ(tasks.size(), 1);
     task = tasks[0];
 
-    start_time_t = task->get_scheduled_time();
+    start_time_t = task->get_scheduled_datetime();
     task_start_time = *localtime(&start_time_t);
 
     ASSERT_EQ(task_start_time.tm_mday, start_time.tm_mday);

@@ -1,5 +1,6 @@
 #include "tasktracklib.h"
 #include <iostream>
+#include <algorithm>
 
 namespace tasktracker {
 
@@ -41,6 +42,13 @@ TaskTracker::get_task_instances(tm date)
             task_instances.push_back(m_task_instances.at(instance_id).get());
         }
     }
+
+    std::sort(task_instances.begin(), task_instances.end(),
+            [] (const auto &a, const auto& b) {
+                return a->get_scheduled_time() > b->get_scheduled_time();
+            }
+    );
+
     return task_instances;
 }
 

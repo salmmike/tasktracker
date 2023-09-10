@@ -58,9 +58,20 @@ TaskInstance::finish_task()
 }
 
 time_t
-TaskInstance::get_scheduled_time()
+TaskInstance::get_scheduled_datetime()
 {
     return m_data->scheduled_start;
+}
+
+time_t TaskInstance::get_scheduled_time()
+{
+    tm start_time {};
+    const auto start_datetime = get_scheduled_datetime();
+    tm start_datetime_tm = *localtime(&start_datetime);
+    start_time.tm_hour = start_datetime_tm.tm_hour;
+    start_time.tm_min = start_datetime_tm.tm_min;
+
+    return mktime(&start_time);
 }
 
 std::chrono::seconds
