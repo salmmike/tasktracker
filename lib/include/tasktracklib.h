@@ -47,6 +47,7 @@ public:
     /// @param repeat_info repeat info, handled based on repeat_type
     /// @param start_time First date of the task and the time when the task should be scheduled.
     void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, tm start_time);
+    void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, time_t start_time);
     void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, std::chrono::year_month_day start_date, std::chrono::hours hour, std::chrono::minutes mins);
 
     /// @brief Clear the database used by this TaskTracker
@@ -66,7 +67,7 @@ private:
     std::string m_create_identifier(std::chrono::year_month_day day, Task* task);
     std::string m_create_identifier(tm day, Task* task);
 
-    void m_create_task_intance(const std::unique_ptr<Task>& task, tm date, const std::string& instance_id);
+    void m_create_task_instance(const std::unique_ptr<Task>& task, tm date, const std::string& instance_id);
 
     void m_load_tasks();
 };

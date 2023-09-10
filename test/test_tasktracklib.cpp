@@ -6,8 +6,8 @@
 
 #define NAME test_tasktracklib
 #define TESTDBFILE "test2.db"
-#define TESTTASKNAME "test_task"
-#define TESTTASKNAME2 "test_task2"
+#define TESTTASKNAME "test task"
+#define TESTTASKNAME2 "test task2"
 
 using namespace tasktracker;
 
@@ -16,6 +16,13 @@ std::string format_date(tm* date, const std::string& str="")
     char buffer[26];
     strftime(buffer, 26, "%a %Y-%m-%d %H:%M:%S", date);
     return str + buffer;
+}
+
+
+std::string format_date(time_t* date, const std::string& str="")
+{
+    tm* time_tm = localtime(date);
+    return format_date(time_tm, str);
 }
 
 tm add_days(int days, tm date)
@@ -39,11 +46,16 @@ TEST(NAME, test_create_task)
     start_time.tm_year = 2023 - 1900;
     start_time.tm_mday = 1;
     start_time.tm_hour = 9;
+    start_time.tm_min = 30;
 
     tracker.add_task(TESTTASKNAME, RepeatType::WithInterval, 5, start_time);
     auto tasks = tracker.get_task_instances(start_time);
 
     ASSERT_EQ(tasks.size(), 1);
+    time_t scheduled_time = tasks[0]->get_scheduled_time();
+
+    ASSERT_EQ(localtime(&scheduled_time)->tm_hour, start_time.tm_hour);
+    ASSERT_EQ(localtime(&scheduled_time)->tm_min, start_time.tm_min);
 
     tracker.add_task(TESTTASKNAME2, RepeatType::WithInterval, 5, start_time);
     tasks = tracker.get_task_instances(start_time);
@@ -52,6 +64,18 @@ TEST(NAME, test_create_task)
     start_time.tm_mday += 1;
     tasks = tracker.get_task_instances(start_time);
     ASSERT_EQ(tasks.size(), 0);
+
+
+    tracker.add_task(TESTTASKNAME, RepeatType::NoRepeat, 0, start_time);
+    TaskTracker tracker2(TESTDBFILE);
+
+    tasks = tracker2.get_task_instances(start_time);
+
+    ASSERT_EQ(tasks.size(), 1);
+    scheduled_time = tasks[0]->get_scheduled_time();
+
+    ASSERT_EQ(localtime(&scheduled_time)->tm_hour, start_time.tm_hour);
+    ASSERT_EQ(localtime(&scheduled_time)->tm_min, start_time.tm_min);
 
     tracker.clear();
 }
@@ -65,6 +89,7 @@ TEST(NAME, test_task_repeat_interval)
     start_time.tm_year = 2023 - 1900;
     start_time.tm_mday = 1;
     start_time.tm_hour = 9;
+    start_time.tm_min = 30;
 
     tracker.add_task(TESTTASKNAME, RepeatType::WithInterval, 5, start_time);
     auto tasks = tracker.get_task_instances(start_time);
@@ -87,6 +112,7 @@ TEST(NAME, test_task_repeat_interval)
     start_time_t = task->get_scheduled_datetime();
     task_start_time = *localtime(&start_time_t);
 
+    ASSERT_EQ(task_start_time.tm_mday, start_time.tm_mday);
     ASSERT_EQ(task_start_time.tm_mday, start_time.tm_mday);
     tracker.clear();
 }

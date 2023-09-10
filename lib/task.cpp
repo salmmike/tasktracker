@@ -28,12 +28,12 @@ TaskInstance::~TaskInstance()
 {
 }
 
-std::string TaskInstance::get_name()
+std::string TaskInstance::get_name() const
 {
     return m_data->name;
 }
 
-std::string TaskInstance::get_uid()
+std::string TaskInstance::get_uid() const
 {
     return m_data->id;
 }
@@ -58,16 +58,17 @@ TaskInstance::finish_task()
 }
 
 time_t
-TaskInstance::get_scheduled_datetime()
+TaskInstance::get_scheduled_datetime() const
 {
     return m_data->scheduled_start;
 }
 
-time_t TaskInstance::get_scheduled_time()
+time_t TaskInstance::get_scheduled_time() const
 {
     tm start_time {};
-    const auto start_datetime = get_scheduled_datetime();
+    const time_t start_datetime = get_scheduled_datetime();
     tm start_datetime_tm = *localtime(&start_datetime);
+
     start_time.tm_hour = start_datetime_tm.tm_hour;
     start_time.tm_min = start_datetime_tm.tm_min;
 
@@ -75,7 +76,7 @@ time_t TaskInstance::get_scheduled_time()
 }
 
 std::chrono::seconds
-TaskInstance::get_time_spent()
+TaskInstance::get_time_spent() const
 {
     return m_data->time_spent;
 }
@@ -88,13 +89,13 @@ TaskInstance::set_comment(const std::string &str)
 }
 
 std::string
-TaskInstance::get_comment()
+TaskInstance::get_comment() const
 {
     return m_data->comment;
 }
 
 const TaskInstanceData*
-TaskInstance::get_data()
+TaskInstance::get_data() const
 {
     return m_data.get();
 }

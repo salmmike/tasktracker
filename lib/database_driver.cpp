@@ -99,7 +99,7 @@ s_get_task_instance_cb(void* data, int argc, char** argv, char** column)
         switch (i)
         {
         case 0:
-            std::stringstream(argv[i]) >> task->id;
+            task->id = argv[i];
             break;
         case 1:
             std::stringstream(argv[i]) >> task->parent_id;
@@ -262,7 +262,6 @@ TaskDatabase::update_task(const TaskData* task)
 
     m_execute(str);
     m_close_db();
-
 }
 
 void
@@ -347,6 +346,7 @@ TaskInstanceDatabase::update_task(const TaskInstanceData *task) noexcept(false)
 
     m_execute(str);
     m_close_db();
+
 }
 
 void

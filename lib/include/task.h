@@ -35,9 +35,9 @@ public:
     explicit TaskInstance(std::unique_ptr<TaskInstanceData> &&data, TaskInstanceDatabase* db);
     ~TaskInstance();
 
-    std::string get_name();
+    std::string get_name() const;
 
-    std::string get_uid();
+    std::string get_uid() const;
 
     /// @brief Set the task state to started, update start_time to current time.
     void start_task();
@@ -50,26 +50,26 @@ public:
 
     /// @brief get the date and time when the task is scheduled to start
     /// @return the date and time of scheduled start
-    time_t get_scheduled_datetime();
+    time_t get_scheduled_datetime() const;
 
     /// @brief get hours and minutes of the start time
     /// @return hours and minutes of the start time in a time_t struct
-    time_t get_scheduled_time();
+    time_t get_scheduled_time() const;
 
     /// @brief Get time spent on the task
     /// @return time in seconds
-    std::chrono::seconds get_time_spent();
+    std::chrono::seconds get_time_spent() const;
 
     /// @brief Set a comment for the task
     void set_comment(const std::string& str);
 
     /// @brief Get related comment
     /// @return the comment as a string
-    std::string get_comment();
+    std::string get_comment() const;
 
     /// @brief get the TaskInstanceData
     /// @return pointer to TaskInstanceData
-    const TaskInstanceData* get_data();
+    const TaskInstanceData* get_data() const;
 
 private:
     std::unique_ptr<TaskInstanceData> m_data;

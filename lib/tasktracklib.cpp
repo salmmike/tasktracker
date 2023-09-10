@@ -4,6 +4,22 @@
 
 namespace tasktracker {
 
+
+std::string format_date(tm* date, const std::string& str="")
+{
+    char buffer[26];
+    strftime(buffer, 26, "%a %Y-%m-%d %H:%M:%S", date);
+    return str + buffer;
+}
+
+
+std::string format_date(time_t* date, const std::string& str="")
+{
+    tm* time_tm = localtime(date);
+    return format_date(time_tm, str);
+}
+
+
 TaskTracker::TaskTracker(std::filesystem::path path):
     m_task_instance_db(std::make_unique<TaskInstanceDatabase>(path)),
     m_task_db(std::make_unique<TaskDatabase>(path))
@@ -37,7 +53,7 @@ TaskTracker::get_task_instances(tm date)
         if (task->occurs(date)) {
             auto instance_id = m_create_identifier(date, task.get());
             if (!m_task_instances.contains(instance_id)) {
-                m_create_task_intance(task, date, instance_id);
+                m_create_task_instance(task, date, instance_id);
             }
             task_instances.push_back(m_task_instances.at(instance_id).get());
         }
@@ -82,6 +98,12 @@ TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repea
     m_tasks.push_back(std::move(task_));
 }
 
+void TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repeat_info, time_t start_time)
+{
+    tm* start_time_tm = localtime(&start_time);
+    add_task(name, repeat_type, repeat_info, *start_time_tm);
+}
+
 void TaskTracker::clear()
 {
     m_task_db->clear();
@@ -92,7 +114,6 @@ void TaskTracker::clear()
 std::string
 TaskTracker::m_create_identifier(std::chrono::year_month_day day, Task *task)
 {
-
     tm tm_day{};
 
     tm_day.tm_year = static_cast<int>(day.year()) - 1900;
@@ -107,10 +128,11 @@ TaskTracker::m_create_identifier(tm day, Task *task)
 {
     std::stringstream ss;
     ss << task->get_id() << "-" << day.tm_year << "-" << day.tm_mon << "-" << day.tm_mday;
-    return task->get_name() + "-" + ss.str();
+    auto str = task->get_name() + "-" + ss.str();
+    return str;
 }
 
-void TaskTracker::m_create_task_intance(const std::unique_ptr<Task> &task, tm date, const std::string& instance_id)
+void TaskTracker::m_create_task_instance(const std::unique_ptr<Task> &task, tm date, const std::string& instance_id)
 {
     auto task_instance_data = m_task_instance_db->get_task(instance_id);
 
@@ -128,6 +150,7 @@ void TaskTracker::m_create_task_intance(const std::unique_ptr<Task> &task, tm da
         task_instance_data->scheduled_start = mktime(&start_time);
         m_task_instance_db->update_task(task_instance_data.get());
     }
+
     task_instance_data = m_task_instance_db->get_task(instance_id);
     auto task_instance = std::make_unique<TaskInstance>(std::move(task_instance_data), m_task_instance_db.get());
     m_task_instances.insert({instance_id, std::move(task_instance)});
