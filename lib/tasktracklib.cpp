@@ -61,7 +61,10 @@ TaskTracker::get_task_instances(tm date)
 
     std::sort(task_instances.begin(), task_instances.end(),
             [] (const auto &a, const auto& b) {
-                return a->get_scheduled_time() > b->get_scheduled_time();
+                if (a->get_scheduled_time() == b->get_scheduled_time()) [[unlikely]] {
+                    return a->get_name() < b->get_name();
+                }
+                return a->get_scheduled_time() < b->get_scheduled_time();
             }
     );
 
