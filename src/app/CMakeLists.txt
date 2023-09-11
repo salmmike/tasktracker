@@ -4,14 +4,22 @@ set(CMAKE_AUTOMOC ON)
 include_directories(${PROJECT_SOURCE_DIR}/lib/include/)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick)
 
+
+set(CMAKE_CXX_CLANG_TIDY
+    clang-tidy;
+    -header-filter=.;
+    -extra-arg=-std=c++20)
+
 add_executable(tasktracker
     main.cpp
+    include/TaskListModel.h
+    TaskListModel.cpp
 )
 
 qt_add_qml_module(tasktracker
     URI tasktrackerqml
     VERSION 1.0
-    QML_FILES qml/Main.qml
+    QML_FILES qml/Main.qml qml/TaskItem.qml qml/TaskList.qml
 )
 
 target_link_libraries(tasktracker
