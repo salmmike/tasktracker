@@ -100,6 +100,16 @@ TaskInstance::get_data() const
     return m_data.get();
 }
 
+bool TaskInstance::is_finished() const
+{
+    return m_data->state == TaskState::Finished;
+}
+
+bool TaskInstance::is_skipped() const
+{
+    return m_data->state == TaskState::Skipped;
+}
+
 Task::Task(TaskData *data, TaskDatabase *db):
     m_data(data), m_db(db)
 {

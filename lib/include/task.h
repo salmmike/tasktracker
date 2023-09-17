@@ -71,6 +71,15 @@ public:
     /// @return pointer to TaskInstanceData
     const TaskInstanceData* get_data() const;
 
+    /// @brief Check if task is finished
+    /// @return true if finished
+    bool is_finished() const;
+
+    /// @brief Check if task is skipped
+    /// @return true if skipped
+    bool is_skipped() const;
+
+
 private:
     std::unique_ptr<TaskInstanceData> m_data;
     TaskInstanceDatabase* m_db;
