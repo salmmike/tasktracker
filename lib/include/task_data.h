@@ -11,7 +11,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
  *
  * Author: Mike Salmela
  */
@@ -19,21 +20,25 @@
 #ifndef TASK_DATA_H
 #define TASK_DATA_H
 
-#include <string>
 #include <chrono>
+#include <string>
 
 namespace tasktracker {
 
-enum RepeatType {
+enum RepeatType
+{
     /// @brief event only happens once.
     NoRepeat,
     /// @brief if repeat_info is e.g. 5, repeats on every 5th day of the month.
     Monthly,
-    /// @brief if repeat_info is e.g. 25, repeats on the 5th day of the second week.
-    /// if the month begins in the middle of the week and repeat_info is e.g. 11,
+    /// @brief if repeat_info is e.g. 25, repeats on the 5th day of the second
+    /// week.
+    /// if the month begins in the middle of the week and repeat_info is e.g.
+    /// 11,
     /// the event happens on the first available monday.
     MonthlyDay,
-    /// @brief if repeat_info is 1, event happens every monday. If repeat_info is 123,
+    /// @brief if repeat_info is 1, event happens every monday. If repeat_info
+    /// is 123,
     /// the event happens every monday, tuesday and wednesday.
     SpecifiedDays,
     /// @brief if repeat_info is e.g. 10, the event happens every 10 days.
@@ -41,14 +46,16 @@ enum RepeatType {
 };
 
 /// @brief Data or periodic tasks that should be ran.
-struct TaskData {
+struct TaskData
+{
     /// @brief unique task ID
     size_t id;
     /// @brief task name
     std::string name;
-    /// @brief scheduled time for the task to start. Date represents the first occurance of the task,
-    /// the repeated tasks are calculated from this time. Task instances related to this task always start
-    /// at the same time as the original one.
+    /// @brief scheduled time for the task to start. Date represents the first
+    /// occurance of the task, the repeated tasks are calculated from this
+    /// time. Task instances related to this task always start at the same time
+    /// as the original one.
     time_t scheduled_start;
     /// @brief state of the task (active, inactive)
     std::string state;
@@ -61,7 +68,8 @@ struct TaskData {
     int repeat_info;
 };
 
-enum TaskState {
+enum TaskState
+{
     NotStarted,
     Started,
     Finished,
@@ -91,6 +99,6 @@ struct TaskInstanceData
     TaskState state;
 };
 
-}
+} // namespace tasktracker
 
 #endif /* TASK_DATA_H */

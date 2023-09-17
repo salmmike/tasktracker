@@ -14,3 +14,7 @@ Built with CMake. Requires Qt6 libraries to be installed.
 Set the CMAKE\_PREFIX\_PATH variable when running cmake, e.g.
 `cmake -B build/ -S . -DCMAKE_PREFIX_PATH=/opt/Qt/6.2.4/gcc_64`
 
+## Style
+
+Use `clang-format -style="{BasedOnStyle: Mozilla, IndentWidth: 4}"`
+

@@ -1,7 +1,9 @@
 #include "task.h"
+
 #include <iostream>
 
-static tm s_get_nth_weekday_of_month(int day, int week, tm schedule_tm)
+static tm
+s_get_nth_weekday_of_month(int day, int week, tm schedule_tm)
 {
     schedule_tm.tm_mday = 1;
     schedule_tm.tm_hour = 0;
@@ -10,7 +12,7 @@ static tm s_get_nth_weekday_of_month(int day, int week, tm schedule_tm)
 
     time_t t = mktime(&schedule_tm);
 
-    while(localtime(&t)->tm_wday != day) {
+    while (localtime(&t)->tm_wday != day) {
         t += one_day;
     } // t now at first occurance of day.
     t += (week - 1) * 7 * one_day;
@@ -19,21 +21,23 @@ static tm s_get_nth_weekday_of_month(int day, int week, tm schedule_tm)
 
 namespace tasktracker {
 
-TaskInstance::TaskInstance(std::unique_ptr<TaskInstanceData> &&data, TaskInstanceDatabase *db):
-    m_data(std::move(data)), m_db(db)
+TaskInstance::TaskInstance(std::unique_ptr<TaskInstanceData>&& data,
+                           TaskInstanceDatabase* db)
+  : m_data(std::move(data))
+  , m_db(db)
 {
 }
 
-TaskInstance::~TaskInstance()
-{
-}
+TaskInstance::~TaskInstance() {}
 
-std::string TaskInstance::get_name() const
+std::string
+TaskInstance::get_name() const
 {
     return m_data->name;
 }
 
-std::string TaskInstance::get_uid() const
+std::string
+TaskInstance::get_uid() const
 {
     return m_data->id;
 }
@@ -63,9 +67,10 @@ TaskInstance::get_scheduled_datetime() const
     return m_data->scheduled_start;
 }
 
-time_t TaskInstance::get_scheduled_time() const
+time_t
+TaskInstance::get_scheduled_time() const
 {
-    tm start_time {};
+    tm start_time{};
     const time_t start_datetime = get_scheduled_datetime();
     tm start_datetime_tm = *localtime(&start_datetime);
 
@@ -82,7 +87,7 @@ TaskInstance::get_time_spent() const
 }
 
 void
-TaskInstance::set_comment(const std::string &str)
+TaskInstance::set_comment(const std::string& str)
 {
     m_data->comment = str;
     m_db->update_task(m_data.get());
@@ -100,28 +105,30 @@ TaskInstance::get_data() const
     return m_data.get();
 }
 
-bool TaskInstance::is_finished() const
+bool
+TaskInstance::is_finished() const
 {
     return m_data->state == TaskState::Finished;
 }
 
-bool TaskInstance::is_skipped() const
+bool
+TaskInstance::is_skipped() const
 {
     return m_data->state == TaskState::Skipped;
 }
 
-Task::Task(TaskData *data, TaskDatabase *db):
-    m_data(data), m_db(db)
+Task::Task(TaskData* data, TaskDatabase* db)
+  : m_data(data)
+  , m_db(db)
 {
 }
 
-Task::~Task()
-{
-}
+Task::~Task() {}
 
-ScheduledTime Task::get_scheduled_start_time()
+ScheduledTime
+Task::get_scheduled_start_time()
 {
-    tm *time_struct = localtime(&m_data->scheduled_start);
+    tm* time_struct = localtime(&m_data->scheduled_start);
 
     ScheduledTime time;
     time.hours = std::chrono::hours(time_struct->tm_hour);
@@ -129,30 +136,35 @@ ScheduledTime Task::get_scheduled_start_time()
     return time;
 }
 
-std::string Task::get_name()
+std::string
+Task::get_name()
 {
     return m_data->name;
 }
 
-int Task::get_id()
+int
+Task::get_id()
 {
     return m_data->id;
 }
 
-std::string Task::get_comment()
+std::string
+Task::get_comment()
 {
     return m_data->comment;
 }
 
-void Task::set_comment(const std::string &comment)
+void
+Task::set_comment(const std::string& comment)
 {
     m_data->comment = comment;
     m_db->update_task(m_data);
 }
 
-bool Task::occurs(std::chrono::year_month_day day)
+bool
+Task::occurs(std::chrono::year_month_day day)
 {
-    tm time {};
+    tm time{};
     time.tm_year = static_cast<int>(day.year()) - 1900;
     time.tm_mon = static_cast<unsigned int>(day.month()) - 1;
     time.tm_mday = static_cast<unsigned int>(day.day());
@@ -163,29 +175,30 @@ bool Task::occurs(std::chrono::year_month_day day)
     return occurs(tm);
 }
 
-bool Task::occurs(tm day)
+bool
+Task::occurs(tm day)
 {
     tm schedule_tm = *localtime(&m_data->scheduled_start);
     int repeat_info = m_data->repeat_info;
 
-    switch (m_data->repeat_type)
-    {
+    switch (m_data->repeat_type) {
         case RepeatType::Monthly:
             return day.tm_mday == repeat_info;
 
         case RepeatType::MonthlyDay: {
             int day_val = repeat_info % 10 % 7;
             int week_val = (repeat_info / 10) % 10;
-            if (day_val != day.tm_wday) return false;
+            if (day_val != day.tm_wday)
+                return false;
 
-            tm correct_day  = s_get_nth_weekday_of_month(day_val, week_val, day);
+            tm correct_day = s_get_nth_weekday_of_month(day_val, week_val, day);
             return day.tm_mday == correct_day.tm_mday;
         }
 
         case RepeatType::NoRepeat: {
             return schedule_tm.tm_year == day.tm_year &&
-                schedule_tm.tm_mon == day.tm_mon &&
-                schedule_tm.tm_mday == day.tm_mday;
+                   schedule_tm.tm_mon == day.tm_mon &&
+                   schedule_tm.tm_mday == day.tm_mday;
         }
 
         case RepeatType::SpecifiedDays: {
@@ -208,13 +221,13 @@ bool Task::occurs(tm day)
             start_day = mktime(&start_day_tm);
 
             time_t test_day = mktime(&day);
-            long day_length = 24*60*60;
+            long day_length = 24 * 60 * 60;
 
-            long val = (static_cast<long>(std::difftime(test_day, start_day)) / day_length);
+            long val = (static_cast<long>(std::difftime(test_day, start_day)) /
+                        day_length);
             return (val % repeat_info == 0);
-
     }
     return false;
 }
 
-}
+} // namespace tasktracker

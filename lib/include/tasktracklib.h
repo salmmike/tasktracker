@@ -11,7 +11,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
  *
  * Author: Mike Salmela
  */
@@ -20,40 +21,55 @@
 #define TASKTRACKLIB_H
 
 #include <map>
-#include <task_data.h>
-#include <database_driver.h>
-#include <task.h>
+
+#include "database_driver.h"
+#include "task.h"
+#include "task_data.h"
 
 namespace tasktracker {
 
 /// @brief Class for keeping track of tasks.
 class TaskTracker
 {
-public:
+  public:
     /// @brief Create a TaskTracker
     /// @param path path to the file used as database
     explicit TaskTracker(std::filesystem::path path);
     ~TaskTracker();
 
-    /// @brief get tasks scheduled for date. This object must not leave scope while the results are used.
+    /// @brief get tasks scheduled for date. This object must not leave scope
+    /// while the results are used.
     /// @param date the date when the tasks are scheduled
     /// @return list of TaskInstance objects sorted by the start time.
-    std::vector<TaskInstance*> get_task_instances(std::chrono::year_month_day date);
+    std::vector<TaskInstance*> get_task_instances(
+      std::chrono::year_month_day date);
     std::vector<TaskInstance*> get_task_instances(tm date);
 
     /// @brief Add a new task
     /// @param name name of the task
     /// @param repeat_type RepeatType enum
     /// @param repeat_info repeat info, handled based on repeat_type
-    /// @param start_time First date of the task and the time when the task should be scheduled.
-    void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, tm start_time);
-    void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, time_t start_time);
-    void add_task(const std::string& name, RepeatType repeat_type, int repeat_info, std::chrono::year_month_day start_date, std::chrono::hours hour, std::chrono::minutes mins);
+    /// @param start_time First date of the task and the time when the task
+    /// should be scheduled.
+    void add_task(const std::string& name,
+                  RepeatType repeat_type,
+                  int repeat_info,
+                  tm start_time);
+    void add_task(const std::string& name,
+                  RepeatType repeat_type,
+                  int repeat_info,
+                  time_t start_time);
+    void add_task(const std::string& name,
+                  RepeatType repeat_type,
+                  int repeat_info,
+                  std::chrono::year_month_day start_date,
+                  std::chrono::hours hour,
+                  std::chrono::minutes mins);
 
     /// @brief Clear the database used by this TaskTracker
     void clear();
 
-private:
+  private:
     const std::unique_ptr<TaskInstanceDatabase> m_task_instance_db;
     const std::unique_ptr<TaskDatabase> m_task_db;
 
@@ -61,16 +77,20 @@ private:
     std::map<std::string, std::unique_ptr<TaskInstance>> m_task_instances;
     std::vector<std::unique_ptr<Task>> m_tasks;
 
-    /// @brief Create a unique identifier for a TaskInstance based on the Task and it's date
+    /// @brief Create a unique identifier for a TaskInstance based on the Task
+    /// and it's date
     /// @param day the scheduled date
-    /// @return 
-    std::string m_create_identifier(std::chrono::year_month_day day, Task* task);
+    /// @return
+    std::string m_create_identifier(std::chrono::year_month_day day,
+                                    Task* task);
     std::string m_create_identifier(tm day, Task* task);
 
-    void m_create_task_instance(const std::unique_ptr<Task>& task, tm date, const std::string& instance_id);
+    void m_create_task_instance(const std::unique_ptr<Task>& task,
+                                tm date,
+                                const std::string& instance_id);
 
     void m_load_tasks();
 };
-}
+} // namespace tasktracker
 
 #endif /* TASKTRACKLIB_H */

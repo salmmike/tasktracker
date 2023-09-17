@@ -1,37 +1,35 @@
 #include "tasktracklib.h"
-#include <iostream>
+
 #include <algorithm>
+#include <iostream>
 
 namespace tasktracker {
 
-
-std::string format_date(tm* date, const std::string& str="")
+std::string
+format_date(tm* date, const std::string& str = "")
 {
     char buffer[26];
     strftime(buffer, 26, "%a %Y-%m-%d %H:%M:%S", date);
     return str + buffer;
 }
 
-
-std::string format_date(time_t* date, const std::string& str="")
+std::string
+format_date(time_t* date, const std::string& str = "")
 {
     tm* time_tm = localtime(date);
     return format_date(time_tm, str);
 }
 
-
-TaskTracker::TaskTracker(std::filesystem::path path):
-    m_task_instance_db(std::make_unique<TaskInstanceDatabase>(path)),
-    m_task_db(std::make_unique<TaskDatabase>(path))
+TaskTracker::TaskTracker(std::filesystem::path path)
+  : m_task_instance_db(std::make_unique<TaskInstanceDatabase>(path))
+  , m_task_db(std::make_unique<TaskDatabase>(path))
 {
     m_task_instance_db->init();
     m_task_db->init();
     m_load_tasks();
 }
 
-TaskTracker::~TaskTracker()
-{
-}
+TaskTracker::~TaskTracker() {}
 
 std::vector<TaskInstance*>
 TaskTracker::get_task_instances(std::chrono::year_month_day date)
@@ -49,7 +47,7 @@ TaskTracker::get_task_instances(tm date)
 {
     std::vector<TaskInstance*> task_instances;
 
-    for (auto &task : m_tasks) {
+    for (auto& task : m_tasks) {
         if (task->occurs(date)) {
             auto instance_id = m_create_identifier(date, task.get());
             if (!m_task_instances.contains(instance_id)) {
@@ -59,20 +57,26 @@ TaskTracker::get_task_instances(tm date)
         }
     }
 
-    std::sort(task_instances.begin(), task_instances.end(),
-            [] (const auto &a, const auto& b) {
-                if (a->get_scheduled_time() == b->get_scheduled_time()) [[unlikely]] {
-                    return a->get_name() < b->get_name();
-                }
-                return a->get_scheduled_time() < b->get_scheduled_time();
-            }
-    );
+    std::sort(task_instances.begin(),
+              task_instances.end(),
+              [](const auto& a, const auto& b) {
+                  if (a->get_scheduled_time() == b->get_scheduled_time())
+                    [[unlikely]] {
+                      return a->get_name() < b->get_name();
+                  }
+                  return a->get_scheduled_time() < b->get_scheduled_time();
+              });
 
     return task_instances;
 }
 
 void
-TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repeat_info, std::chrono::year_month_day start_date, std::chrono::hours hour, std::chrono::minutes mins)
+TaskTracker::add_task(const std::string& name,
+                      RepeatType repeat_type,
+                      int repeat_info,
+                      std::chrono::year_month_day start_date,
+                      std::chrono::hours hour,
+                      std::chrono::minutes mins)
 {
     tm start_time{};
 
@@ -86,7 +90,10 @@ TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repea
 }
 
 void
-TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repeat_info, tm start_time)
+TaskTracker::add_task(const std::string& name,
+                      RepeatType repeat_type,
+                      int repeat_info,
+                      tm start_time)
 {
     auto id = m_task_db->create_task(name);
     auto task = m_task_db->get_task(id);
@@ -97,17 +104,23 @@ TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repea
 
     m_task_data.push_back(std::move(task));
 
-    auto task_ = std::make_unique<Task>(m_task_data.back().get(), m_task_db.get());
+    auto task_ =
+      std::make_unique<Task>(m_task_data.back().get(), m_task_db.get());
     m_tasks.push_back(std::move(task_));
 }
 
-void TaskTracker::add_task(const std::string &name, RepeatType repeat_type, int repeat_info, time_t start_time)
+void
+TaskTracker::add_task(const std::string& name,
+                      RepeatType repeat_type,
+                      int repeat_info,
+                      time_t start_time)
 {
     tm* start_time_tm = localtime(&start_time);
     add_task(name, repeat_type, repeat_info, *start_time_tm);
 }
 
-void TaskTracker::clear()
+void
+TaskTracker::clear()
 {
     m_task_db->clear();
     m_task_instance_db->clear();
@@ -115,7 +128,7 @@ void TaskTracker::clear()
 }
 
 std::string
-TaskTracker::m_create_identifier(std::chrono::year_month_day day, Task *task)
+TaskTracker::m_create_identifier(std::chrono::year_month_day day, Task* task)
 {
     tm tm_day{};
 
@@ -127,20 +140,25 @@ TaskTracker::m_create_identifier(std::chrono::year_month_day day, Task *task)
 }
 
 std::string
-TaskTracker::m_create_identifier(tm day, Task *task)
+TaskTracker::m_create_identifier(tm day, Task* task)
 {
     std::stringstream ss;
-    ss << task->get_id() << "-" << day.tm_year << "-" << day.tm_mon << "-" << day.tm_mday;
+    ss << task->get_id() << "-" << day.tm_year << "-" << day.tm_mon << "-"
+       << day.tm_mday;
     auto str = task->get_name() + "-" + ss.str();
     return str;
 }
 
-void TaskTracker::m_create_task_instance(const std::unique_ptr<Task> &task, tm date, const std::string& instance_id)
+void
+TaskTracker::m_create_task_instance(const std::unique_ptr<Task>& task,
+                                    tm date,
+                                    const std::string& instance_id)
 {
     auto task_instance_data = m_task_instance_db->get_task(instance_id);
 
     if (task_instance_data == nullptr) {
-        m_task_instance_db->create_task(task->get_id(), instance_id, task->get_name());
+        m_task_instance_db->create_task(
+          task->get_id(), instance_id, task->get_name());
         task_instance_data = m_task_instance_db->get_task(instance_id);
 
         tm start_time = date;
@@ -155,11 +173,13 @@ void TaskTracker::m_create_task_instance(const std::unique_ptr<Task> &task, tm d
     }
 
     task_instance_data = m_task_instance_db->get_task(instance_id);
-    auto task_instance = std::make_unique<TaskInstance>(std::move(task_instance_data), m_task_instance_db.get());
-    m_task_instances.insert({instance_id, std::move(task_instance)});
+    auto task_instance = std::make_unique<TaskInstance>(
+      std::move(task_instance_data), m_task_instance_db.get());
+    m_task_instances.insert({ instance_id, std::move(task_instance) });
 }
 
-void TaskTracker::m_load_tasks()
+void
+TaskTracker::m_load_tasks()
 {
     m_task_data.clear();
     m_tasks.clear();
@@ -167,8 +187,9 @@ void TaskTracker::m_load_tasks()
     m_task_data = m_task_db->get_tasks();
 
     for (const auto& task_data : m_task_data) {
-        m_tasks.push_back(std::make_unique<Task>(task_data.get(), m_task_db.get()));
+        m_tasks.push_back(
+          std::make_unique<Task>(task_data.get(), m_task_db.get()));
     }
 }
 
-}
+} // namespace tasktracker

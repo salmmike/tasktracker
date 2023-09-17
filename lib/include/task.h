@@ -11,7 +11,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
  *
  * Author: Mike Salmela
  */
@@ -23,7 +24,8 @@
 
 namespace tasktracker {
 
-struct ScheduledTime {
+struct ScheduledTime
+{
     std::chrono::hours hours;
     std::chrono::minutes minutes;
 };
@@ -31,15 +33,17 @@ struct ScheduledTime {
 /// @brief Class for interracting with TaskInstanceData
 class TaskInstance
 {
-public:
-    explicit TaskInstance(std::unique_ptr<TaskInstanceData> &&data, TaskInstanceDatabase* db);
+  public:
+    explicit TaskInstance(std::unique_ptr<TaskInstanceData>&& data,
+                          TaskInstanceDatabase* db);
     ~TaskInstance();
 
     std::string get_name() const;
 
     std::string get_uid() const;
 
-    /// @brief Set the task state to started, update start_time to current time.
+    /// @brief Set the task state to started, update start_time to current
+    /// time.
     void start_task();
 
     /// @brief Set the task state to skipped
@@ -79,15 +83,14 @@ public:
     /// @return true if skipped
     bool is_skipped() const;
 
-
-private:
+  private:
     std::unique_ptr<TaskInstanceData> m_data;
     TaskInstanceDatabase* m_db;
 };
 
 class Task
 {
-public:
+  public:
     explicit Task(TaskData* data, TaskDatabase* db);
     ~Task();
 
@@ -103,7 +106,6 @@ public:
     /// @return unique id
     int get_id();
 
-
     /// @brief get Task comment
     /// @return saved comment as string
     std::string get_comment();
@@ -118,11 +120,11 @@ public:
     bool occurs(tm day);
     bool occurs(std::chrono::year_month_day day);
 
-private:
+  private:
     TaskData* m_data;
     TaskDatabase* m_db;
 };
 
-}
+} // namespace tasktracker
 
 #endif /* TASK_H */
