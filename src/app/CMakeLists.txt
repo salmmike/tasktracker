@@ -2,8 +2,7 @@
 set(CMAKE_AUTOMOC ON)
 
 include_directories(${PROJECT_SOURCE_DIR}/lib/include/)
-find_package(Qt6 REQUIRED COMPONENTS Core Quick)
-
+find_package(Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
 
 set(CMAKE_CXX_CLANG_TIDY
     clang-tidy;
@@ -13,7 +12,9 @@ set(CMAKE_CXX_CLANG_TIDY
 add_executable(tasktracker
     main.cpp
     include/TaskListModel.h
+    include/AddTaskServer.h
     TaskListModel.cpp
+    AddTaskServer.cpp
 )
 
 qt_add_qml_module(tasktracker
@@ -23,7 +24,7 @@ qt_add_qml_module(tasktracker
 )
 
 target_link_libraries(tasktracker
-                      PRIVATE Qt6::Core Qt6::Quick ${PROJECT_NAME}lib
+                      PRIVATE Qt6::Core Qt6::Quick Qt6::HttpServer ${PROJECT_NAME}lib
 )
 
 include(GNUInstallDirs)
