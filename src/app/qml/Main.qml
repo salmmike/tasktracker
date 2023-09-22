@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import com.tasktracker.TaskListModel
 
 Window {
@@ -9,10 +10,21 @@ Window {
   title: qsTr("Hello World")
 
   Rectangle {
-    id: mainSection
+    id: topOptions
+    height: 0
 
     anchors {
       top: parent.top
+      left: parent.left
+      right: parent.right
+    }
+  }
+
+  Rectangle {
+    id: mainSection
+
+    anchors {
+      top: topOptions.bottom
       bottom: parent.bottom
       left: parent.left
       right: parent.right
@@ -27,7 +39,6 @@ Window {
         verticalCenter: parent.verticalCenter
         left: parent.left
         right: parent.right
-        margins: 20
       }
     }
   }

@@ -29,11 +29,24 @@ Rectangle {
 
       required property string taskName
       required property string startTime
+      required property bool skipped
+      required property bool finished
+      required property int index
 
       width: listview.width
-      height: 50
+      height: 70
 
-      color: "#1e1e1e"
+      color: finished ? "green" : skipped ? "orange" : "#1e1e1e"
+
+      MouseArea {
+        id: taskItemMouseArea
+        anchors.fill: parent
+        onPressAndHold: {
+          if (skipped | finished) {
+            TaskListModel.setUndone(delegate.index)
+          }
+        }
+      }
 
       Text {
         id: startTimeText
@@ -42,38 +55,53 @@ Rectangle {
         text: delegate.startTime
         anchors {
           verticalCenter: parent.verticalCenter
+          left: parent.left
+          leftMargin: 20
         }
 
         font {
-          pixelSize: 14
+          pixelSize: 16
           bold: true
         }
       }
 
       Text {
         id: taskNameText
-        minimumPixelSize: 6
-        color: "white"
+        minimumPixelSize: 10
+        color: "gray"
         text: delegate.taskName
-        padding: 20
         anchors {
           left: startTimeText.right
           verticalCenter: startTimeText.verticalCenter
+          leftMargin: 20
         }
 
         font {
           pixelSize: 16
-        }
-      }
-      Button {
-        id: doneButton
-        text: "Done!"
-        anchors {
-          right: parent.right
-          verticalCenter: parent.verticalCenter
+          bold: true
         }
       }
 
+      Button {
+        id: doneButton
+        text: finished | skipped ? "Undo" : "Done!"
+        padding: 15
+        visible: !finished && !skipped
+
+        anchors {
+          right: parent.right
+          verticalCenter: parent.verticalCenter
+          rightMargin: 20
+        }
+
+        onClicked:  {
+          TaskListModel.setFinished(delegate.index)
+        }
+
+        onPressAndHold: {
+          TaskListModel.setSkipped(delegate.index)
+        }
+      }
     }
   }
 }
