@@ -13,6 +13,8 @@
 #define TASKSERVER_PORT 8181
 #endif
 
+#define TASK_UPDATE_PATH "/task"
+
 struct TaskJSONRequest
 {
     int id;
@@ -34,18 +36,24 @@ class TaskServer : public QObject
     Q_OBJECT
 
   public:
-    explicit TaskServer(const tasktracker::TaskTracker* tracker,
+    explicit TaskServer(tasktracker::TaskTracker* tracker,
                         QObject* parent = nullptr);
     ~TaskServer();
     void start();
 
+  signals:
+    void dataModified();
+
   private:
-    const tasktracker::TaskTracker* m_tracker;
-    const std::unique_ptr<QHttpServer> m_server;
+    tasktracker::TaskTracker* m_tracker;
+    std::unique_ptr<QHttpServer> m_server;
     QHttpServerResponse parseRequest(const QJsonObject& obj,
                                      TaskUpdateOperation op);
     std::pair<bool, TaskJSONRequest> checkJsonFields(const QJsonObject& obj,
                                                      TaskUpdateOperation op);
+    void addTask(const TaskJSONRequest& request);
+    void modifyTask(const TaskJSONRequest& request);
+    void deleteTask(const TaskJSONRequest& request);
 };
 
 #endif /* ADDTASKSERVER_H */

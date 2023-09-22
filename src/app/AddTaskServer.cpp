@@ -5,6 +5,54 @@
 
 #include "include/AddTaskServer.h"
 
+TaskServer::TaskServer(tasktracker::TaskTracker* tracker, QObject* parent)
+  : QObject(parent)
+  , m_tracker(tracker)
+  , m_server(std::make_unique<QHttpServer>())
+{
+    m_server->route(
+      TASK_UPDATE_PATH,
+      QHttpServerRequest::Method::Post,
+      [this](const QHttpServerRequest& request) {
+          QJsonParseError err;
+          const auto json = QJsonDocument::fromJson(request.body(), &err);
+          if (err.error != QJsonParseError::NoError || !json.isObject()) {
+              QJsonObject obj{ { "error", "bad request" } };
+              return QHttpServerResponse(
+                obj, QHttpServerResponse::StatusCode::BadRequest);
+          }
+          return this->parseRequest(json.object(), TaskUpdateOperation::Create);
+      });
+
+    m_server->route(
+      TASK_UPDATE_PATH,
+      QHttpServerRequest::Method::Patch,
+      [this](const QHttpServerRequest& request) {
+          QJsonParseError err;
+          const auto json = QJsonDocument::fromJson(request.body(), &err);
+          if (err.error != QJsonParseError::NoError || !json.isObject()) {
+              QJsonObject obj{ { "error", "bad request" } };
+              return QHttpServerResponse(
+                obj, QHttpServerResponse::StatusCode::BadRequest);
+          }
+          return this->parseRequest(json.object(), TaskUpdateOperation::Update);
+      });
+
+    m_server->route(
+      TASK_UPDATE_PATH,
+      QHttpServerRequest::Method::Delete,
+      [this](const QHttpServerRequest& request) {
+          QJsonParseError err;
+          const auto json = QJsonDocument::fromJson(request.body(), &err);
+          if (err.error != QJsonParseError::NoError || !json.isObject()) {
+              QJsonObject obj{ { "error", "bad request" } };
+              return QHttpServerResponse(
+                obj, QHttpServerResponse::StatusCode::BadRequest);
+          }
+          return this->parseRequest(json.object(), TaskUpdateOperation::Delete);
+      });
+}
+
 TaskServer::~TaskServer() {}
 
 void
@@ -16,6 +64,7 @@ TaskServer::start()
 QHttpServerResponse
 TaskServer::parseRequest(const QJsonObject& obj, TaskUpdateOperation op)
 {
+    qDebug() << "Request in!";
     qDebug() << obj;
     auto res = checkJsonFields(obj, op);
 
@@ -24,6 +73,19 @@ TaskServer::parseRequest(const QJsonObject& obj, TaskUpdateOperation op)
           QJsonObject{ { "error", "Request fields incorrect." } },
           QHttpServerResponse::StatusCode::BadRequest);
     }
+    switch (op)
+    {
+    case TaskUpdateOperation::Create:
+        addTask(res.second);
+        break;
+    case TaskUpdateOperation::Update:
+        modifyTask(res.second);
+        break;
+    case TaskUpdateOperation::Delete:
+        deleteTask(res.second);
+        break;
+    }
+    emit dataModified();
 
     return QHttpServerResponse(QJsonObject{ { "error", 0 } },
                                QHttpServerResponse::StatusCode::Ok);
@@ -48,6 +110,7 @@ TaskServer::checkJsonFields(const QJsonObject& obj, TaskUpdateOperation op)
         const auto valit = obj.constFind("taskID");
 
         if (valit == obj.constEnd() || !valit.value().isDouble()) {
+            qDebug() << "Fault in taskID";
             return { false, {} };
         }
 
@@ -61,6 +124,7 @@ TaskServer::checkJsonFields(const QJsonObject& obj, TaskUpdateOperation op)
             const auto valit = obj.constFind(str);
 
             if (valit == obj.constEnd() || !valit.value().isDouble()) {
+                qDebug() << "Fault in" << str;
                 return { false, {} };
             }
             qDebug() << valit.value().toInteger();
@@ -77,22 +141,24 @@ TaskServer::checkJsonFields(const QJsonObject& obj, TaskUpdateOperation op)
     return { true, requestData };
 }
 
-TaskServer::TaskServer(const tasktracker::TaskTracker* tracker, QObject* parent)
-  : QObject(parent)
-  , m_tracker(tracker)
-  , m_server(std::make_unique<QHttpServer>())
+void
+TaskServer::addTask(const TaskJSONRequest& request)
 {
-    m_server->route(
-      "/test",
-      QHttpServerRequest::Method::Post,
-      [this](const QHttpServerRequest& request) {
-          QJsonParseError err;
-          const auto json = QJsonDocument::fromJson(request.body(), &err);
-          if (err.error != QJsonParseError::NoError || !json.isObject()) {
-              QJsonObject obj{ { "error", "bad request" } };
-              return QHttpServerResponse(
-                obj, QHttpServerResponse::StatusCode::BadRequest);
-          }
-          return this->parseRequest(json.object(), TaskUpdateOperation::Create);
-      });
+    std::string name = request.name.toStdString();
+    m_tracker->add_task(name,
+                        (tasktracker::RepeatType)request.repeat_type,
+                        request.repeat_info,
+                        (time_t)request.start_time);
+}
+
+void
+TaskServer::modifyTask(const TaskJSONRequest& request)
+{
+    Q_UNUSED(request)
+}
+
+void
+TaskServer::deleteTask(const TaskJSONRequest& request)
+{
+    Q_UNUSED(request)
 }

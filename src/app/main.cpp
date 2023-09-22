@@ -39,14 +39,16 @@ main(int argc, char* argv[])
       QDir().homePath().toStdString() + "/.tasktracker/" + "tasks.db";
     QDir().mkdir(QDir().homePath() + "/.tasktracker/");
     tasktracker::TaskTracker tracker(db_path);
-    TaskServer server(&tracker);
-    server.start();
+    TaskServer *server = new TaskServer(&tracker, &app);
+    server->start();
 
     add_test_tasks(&tracker);
 
     TaskListModel* taskListModel = new TaskListModel(&tracker, &app);
     qmlRegisterSingletonInstance(
       "com.tasktracker.TaskListModel", 1, 0, "TaskListModel", taskListModel);
+
+    QObject::connect(server, &TaskServer::dataModified, taskListModel, &TaskListModel::refresh);
 
     QQmlApplicationEngine engine;
     const QUrl url(u"qrc:/tasktrackerqml/qml/Main.qml"_qs);
