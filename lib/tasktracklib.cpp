@@ -93,7 +93,19 @@ void
 TaskTracker::delete_task(int id)
 {
     auto task = m_task_db->get_task(id);
+    if (task == nullptr) {
+        return;
+    }
+
     m_task_db->delete_task(task.get());
+
+    const auto it =
+      std::find_if(m_tasks.begin(), m_tasks.end(), [id](const auto& n_task) {
+          return n_task->get_id() == id;
+      });
+    if (it != m_tasks.end()) {
+        m_tasks.erase(it);
+    }
 }
 
 void
@@ -137,12 +149,32 @@ TaskTracker::clear()
 std::vector<Task*>
 TaskTracker::get_tasks()
 {
-    std::vector<Task*> tasks(m_tasks.size());
+    std::vector<Task*> tasks;
+
     for (const auto& task : m_tasks) {
         tasks.push_back(task.get());
     }
 
     return tasks;
+}
+
+Task*
+TaskTracker::get_task(int id)
+{
+    const auto it =
+      std::find_if(m_tasks.begin(), m_tasks.end(), [id](const auto& task) {
+          return (task->get_id() == id);
+      });
+    if (it == m_tasks.end()) {
+        return nullptr;
+    }
+    return it->get();
+}
+
+void
+TaskTracker::modify_task(const TaskData* task)
+{
+    m_task_db->update_task(task);
 }
 
 std::string

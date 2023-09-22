@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QHttpServerResponse>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonParseError>
 
@@ -45,12 +46,16 @@ TaskServer::TaskServer(tasktracker::TaskTracker* tracker, QObject* parent)
           QJsonParseError err;
           const auto json = QJsonDocument::fromJson(request.body(), &err);
           if (err.error != QJsonParseError::NoError || !json.isObject()) {
-              QJsonObject obj{ { "error", "bad request" } };
+              QJsonObject obj{ { "error", "Bad request body." } };
               return QHttpServerResponse(
                 obj, QHttpServerResponse::StatusCode::BadRequest);
           }
           return this->parseRequest(json.object(), TaskUpdateOperation::Delete);
       });
+
+    m_server->route(TASK_UPDATE_PATH,
+                    QHttpServerRequest::Method::Get,
+                    [this]() { return this->getTasks(); });
 }
 
 TaskServer::~TaskServer() {}
@@ -153,11 +158,42 @@ TaskServer::addTask(const TaskJSONRequest& request)
 void
 TaskServer::modifyTask(const TaskJSONRequest& request)
 {
-    Q_UNUSED(request)
+    tasktracker::Task* task = m_tracker->get_task(request.id);
+    auto data = task->get_data();
+    data->name =
+      !request.name.isEmpty() ? request.name.toStdString() : data->name;
+    data->repeat_info =
+      request.repeat_info > 0 ? request.repeat_info : data->repeat_info;
+    data->repeat_type =
+      request.repeat_type >= 0
+        ? static_cast<tasktracker::RepeatType>(request.repeat_type)
+        : data->repeat_type;
+    data->scheduled_start =
+      request.start_time >= 0 ? request.start_time : data->scheduled_start;
+
+    m_tracker->modify_task(data);
 }
 
 void
 TaskServer::deleteTask(const TaskJSONRequest& request)
 {
-    Q_UNUSED(request)
+    m_tracker->delete_task(request.id);
+}
+
+QHttpServerResponse
+TaskServer::getTasks()
+{
+    QVariantList resp;
+
+    for (const tasktracker::Task* task : m_tracker->get_tasks()) {
+        QVariantMap map = {
+            { "taskName", QString::fromStdString(task->get_name()) },
+            { "taskID", task->get_id() },
+            { "taskStart",
+              static_cast<qint64>(task->get_scheduled_start_time_t()) },
+        };
+        resp.append(map);
+    }
+
+    return { QJsonArray::fromVariantList(resp) };
 }

@@ -105,13 +105,17 @@ class Task
     /// @return ScheduledTime struct
     ScheduledTime get_scheduled_start_time();
 
+    /// @brief Get the time the task starts
+    /// @return time_t
+    time_t get_scheduled_start_time_t() const;
+
     /// @brief get the name of the task
     /// @return name as a string
-    std::string get_name();
+    std::string get_name() const;
 
     /// @brief get the unique id
     /// @return unique id
-    int get_id();
+    int get_id() const;
 
     /// @brief get Task comment
     /// @return saved comment as string
@@ -126,6 +130,8 @@ class Task
     /// @return true if the Task occurs on the day
     bool occurs(tm day);
     bool occurs(std::chrono::year_month_day day);
+
+    TaskData* get_data() { return m_data; };
 
   private:
     TaskData* m_data;

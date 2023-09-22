@@ -149,14 +149,20 @@ Task::get_scheduled_start_time()
     return time;
 }
 
+time_t
+Task::get_scheduled_start_time_t() const
+{
+    return m_data->scheduled_start;
+}
+
 std::string
-Task::get_name()
+Task::get_name() const
 {
     return m_data->name;
 }
 
 int
-Task::get_id()
+Task::get_id() const
 {
     return m_data->id;
 }

@@ -73,6 +73,7 @@ class TaskServer : public QObject
     void addTask(const TaskJSONRequest& request);
     void modifyTask(const TaskJSONRequest& request);
     void deleteTask(const TaskJSONRequest& request);
+    QHttpServerResponse getTasks();
 };
 
 #endif /* ADDTASKSERVER_H */

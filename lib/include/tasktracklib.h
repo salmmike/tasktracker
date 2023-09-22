@@ -78,6 +78,10 @@ class TaskTracker
     /// in scope and clear isn't called.
     std::vector<Task*> get_tasks();
 
+    Task* get_task(int id);
+
+    void modify_task(const TaskData* task);
+
   private:
     const std::unique_ptr<TaskInstanceDatabase> m_task_instance_db;
     const std::unique_ptr<TaskDatabase> m_task_db;
