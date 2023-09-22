@@ -66,8 +66,17 @@ class TaskTracker
                   std::chrono::hours hour,
                   std::chrono::minutes mins);
 
+    /// @brief Delete a task.
+    /// @param id unique ID of the task to delete.
+    void delete_task(int id);
+
     /// @brief Clear the database used by this TaskTracker
     void clear();
+
+    /// @brief List all tasks.
+    /// @return vector of Task*. Pointers are valid as long as this item is kept
+    /// in scope and clear isn't called.
+    std::vector<Task*> get_tasks();
 
   private:
     const std::unique_ptr<TaskInstanceDatabase> m_task_instance_db;

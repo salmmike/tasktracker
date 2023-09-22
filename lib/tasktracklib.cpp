@@ -90,6 +90,13 @@ TaskTracker::add_task(const std::string& name,
 }
 
 void
+TaskTracker::delete_task(int id)
+{
+    auto task = m_task_db->get_task(id);
+    m_task_db->delete_task(task.get());
+}
+
+void
 TaskTracker::add_task(const std::string& name,
                       RepeatType repeat_type,
                       int repeat_info,
@@ -125,6 +132,17 @@ TaskTracker::clear()
     m_task_db->clear();
     m_task_instance_db->clear();
     m_load_tasks();
+}
+
+std::vector<Task*>
+TaskTracker::get_tasks()
+{
+    std::vector<Task*> tasks(m_tasks.size());
+    for (const auto& task : m_tasks) {
+        tasks.push_back(task.get());
+    }
+
+    return tasks;
 }
 
 std::string
