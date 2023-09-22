@@ -12,7 +12,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   SOURCE_DIR:   ${{ github.workspace }}
-  QT_VERSION:   6.2.*
+  QT_VERSION:   6.5.*
 
 jobs:
   build:
@@ -36,6 +36,7 @@ jobs:
         target:       desktop
         arch:         gcc_64
         dir:          ${{ runner.temp }}
+        modules: qthttpserver qtwebsockets
         setup-python: false
 
     - name: Configure CMake

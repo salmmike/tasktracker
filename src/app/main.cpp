@@ -34,7 +34,7 @@ add_test_tasks(tasktracker::TaskTracker* tracker)
     auto now = std::chrono::system_clock::now();
     auto today = std::chrono::system_clock::to_time_t(now);
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 1; i < 11; ++i) {
         std::stringstream ss;
 
         if (i % 2) {
