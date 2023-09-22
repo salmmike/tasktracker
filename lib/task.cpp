@@ -61,6 +61,13 @@ TaskInstance::finish_task()
     m_db->update_task(m_data.get());
 }
 
+void
+TaskInstance::set_undone()
+{
+    m_data->state = TaskState::NotStarted;
+    m_db->update_task(m_data.get());
+}
+
 time_t
 TaskInstance::get_scheduled_datetime() const
 {
@@ -115,6 +122,12 @@ bool
 TaskInstance::is_skipped() const
 {
     return m_data->state == TaskState::Skipped;
+}
+
+bool
+TaskInstance::is_started() const
+{
+    return m_data->state == TaskState::Started;
 }
 
 Task::Task(TaskData* data, TaskDatabase* db)

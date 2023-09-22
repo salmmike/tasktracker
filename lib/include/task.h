@@ -52,6 +52,9 @@ class TaskInstance
     /// @brief Set the task state to finished, log finish time.
     void finish_task();
 
+    /// @brief Set the task back to not started state.
+    void set_undone();
+
     /// @brief get the date and time when the task is scheduled to start
     /// @return the date and time of scheduled start
     time_t get_scheduled_datetime() const;
@@ -82,6 +85,10 @@ class TaskInstance
     /// @brief Check if task is skipped
     /// @return true if skipped
     bool is_skipped() const;
+
+    /// @brief Check if task is started
+    /// @return true if started
+    bool is_started() const;
 
   private:
     std::unique_ptr<TaskInstanceData> m_data;
