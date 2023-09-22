@@ -73,17 +73,16 @@ TaskServer::parseRequest(const QJsonObject& obj, TaskUpdateOperation op)
           QJsonObject{ { "error", "Request fields incorrect." } },
           QHttpServerResponse::StatusCode::BadRequest);
     }
-    switch (op)
-    {
-    case TaskUpdateOperation::Create:
-        addTask(res.second);
-        break;
-    case TaskUpdateOperation::Update:
-        modifyTask(res.second);
-        break;
-    case TaskUpdateOperation::Delete:
-        deleteTask(res.second);
-        break;
+    switch (op) {
+        case TaskUpdateOperation::Create:
+            addTask(res.second);
+            break;
+        case TaskUpdateOperation::Update:
+            modifyTask(res.second);
+            break;
+        case TaskUpdateOperation::Delete:
+            deleteTask(res.second);
+            break;
     }
     emit dataModified();
 
