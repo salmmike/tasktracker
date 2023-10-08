@@ -13,6 +13,9 @@ Makefile
 *.db
 .vscode/
 build/**
+**/build/
+**/*venv/
+**/__pycache__/
 _deps/
 Testing/
 CMakeCache.txt.prev
