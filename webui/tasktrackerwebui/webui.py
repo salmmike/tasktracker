@@ -1,108 +1,196 @@
-from flask import Flask, render_template, request
+"""
+Web UI for adding tasks.
+"""
+from enum import Enum, IntEnum
 import datetime
 import time
+import pathlib
+import configparser
+import logging
+
+
 import requests
-from enum import IntEnum
+
+from flask import Flask, render_template, request
 
 from waitress import serve
 
-TASK_POST_ADDR = "http://127.0.0.1:8181/task"
-
+CONFIG_FILE_PATH = pathlib.Path("/etc/tasktracker/tasktracker.ini")
 INPUT_TASK_HTML = "input_task.html"
+logger = logging.getLogger("tasktracker_web_ui")
 
 
 class RepeatInfo(IntEnum):
-    NoRepat = 0
-    Monthly = 1
-    MonthlyDay = 2
-    SpecifiedDays = 3
-    WithInterval = 4
+    """
+    Different task repeat types.
+    """
+
+    NO_REPEAT = 0
+    MONTHLY = 1
+    MONTHLY_DAY = 2
+    SPECIFIED_DAYS = 3
+    WITH_INTERVAL = 4
 
 
-def get_repeat_info(info: str):
+def get_config() -> configparser.ConfigParser:
+    """
+    Get the tasktracker configuration
+    """
+    config = configparser.ConfigParser()
+    config.read(CONFIG_FILE_PATH)
+    return config
+
+
+class _AddTaskFields(str, Enum):
+    START = "task_start"
+    TIME = "task_time"
+    NAME = "task_name"
+    REPEAT_INFO = "repeat_info"
+
+
+def _get_repeat_info(info):
     """
     Repeat info enum to values.
     """
     if info == "daily":
-        return RepeatInfo.SpecifiedDays, 1234567
+        return RepeatInfo.SPECIFIED_DAYS, 1234567
     if info == "weekly":
-        return RepeatInfo.WithInterval, 7
+        return RepeatInfo.WITH_INTERVAL, 7
     if info == "weekdays":
-        return RepeatInfo.SpecifiedDays, 12345
+        return RepeatInfo.SPECIFIED_DAYS, 12345
     if info == "biweekly":
-        return RepeatInfo.WithInterval, 14
+        return RepeatInfo.WITH_INTERVAL, 14
     raise RuntimeError("Wrong repeat info!")
 
 
-def post_add_task(data: dict):
+class WebUIError(RuntimeError):
     """
-    Add task to tasktracker
+    Error for WebUI
     """
-    try:
-        start_date = [int(x) for x in data.get("task_start").split("-")]
-        if len(start_date) != 3:
-            raise ValueError()
-    except ValueError:
-        raise RuntimeError("Invalid value for start date!")
-    try:
-        start_time = [int(x) for x in data.get("task_time").split(":")]
-        if len(start_time) != 2:
-            raise ValueError()
-    except ValueError:
-        raise RuntimeError("Invalid value for start time!")
-
-    if not data.get("task_name"):
-        raise RuntimeError("No task name!")
-
-    if len(start_time) != 2:
-        raise ValueError("start_time parameter incorrect")
-    if len(start_date) != 3:
-        raise ValueError("start_date parameter incorrect")
-
-    time_t = datetime.datetime(
-        year=start_date[0],
-        month=start_date[1],
-        day=start_date[2],
-        hour=start_time[0],
-        minute=start_time[1],
-    )
-
-    time_t = int(time.mktime(time_t.timetuple()))
-    repeat_type, repeat_info = get_repeat_info(data.get("repeat_info"))
-
-    jsondata = {
-        "taskName": data.get("task_name"),
-        "taskStart": time_t,
-        "taskRepeatInfo": repeat_info,
-        "taskRepeatType": repeat_type,
-    }
-
-    resp = requests.post(url=TASK_POST_ADDR, json=jsondata, verify=False)
-    if resp.status_code != 200:
-        raise RuntimeError(resp.text)
 
 
-def make_app() -> Flask:
-    app = Flask(__name__)
+class TaskTrackerWebUI:
+    """
+    Provides a webui for adding tasks to the TaskTracker application.
+    """
 
-    @app.route("/", methods=["POST", "GET"])
-    def create_task():
+    def __init__(self, config: configparser.ConfigParser) -> None:
+        self._config = config
+
+    def start(self):
+        """
+        Start the webui
+        """
+        app = self._make_app()
+        serve(app, host="0.0.0.0", port=self._port)
+
+    @property
+    def _port(self):
+        return self._config["webui"]["port"]
+
+    @property
+    def _api_address(self):
+        return self._config["tasktrackerapi"]["hostaddress"]
+
+    @property
+    def _api_port(self):
+        return self._config["tasktrackerapi"]["port"]
+
+    @property
+    def _add_task(self):
+        return self._config["tasktrackerapi"]["addTaskApi"]
+
+    @property
+    def _task_post_addr(self):
+        return f"{self._api_address}:{self._api_port}/{self._add_task}"
+
+    def post_add_task(self, data: dict):
+        """
+        Add task to tasktracker
+        """
         try:
-            if request.method == "GET":
-                return render_template(INPUT_TASK_HTML)
-            if request.method == "POST":
-                print(request.form.to_dict())
-                post_add_task(request.form.to_dict())
-                return render_template(INPUT_TASK_HTML)
-        except Exception as err:
-            return str(err)
+            start_date = [int(x) for x in data.get(_AddTaskFields.START).split("-")]
+            if len(start_date) != 3:
+                err = (
+                    f"{_AddTaskFields.START.value} len incorrect."
+                    f" Was {len(start_date)}. {start_date}"
+                )
 
-    return app
+                raise ValueError(err)
+        except ValueError as exc:
+            logger.error("Error in post data: %s", exc)
+            raise WebUIError("Invalid value for start date!") from exc
+        try:
+            start_time = [int(x) for x in data.get(_AddTaskFields.TIME).split(":")]
+            if len(start_time) != 2:
+                err = (
+                    f"{_AddTaskFields.TIME.value} len incorrect. "
+                    f"Was {len(start_time)}. {start_time}"
+                )
+                raise ValueError(err)
+        except (ValueError, AttributeError) as exc:
+            logger.error("Error in post data: %s", exc)
+            raise WebUIError("Invalid value for start time!") from exc
+
+        if not data.get(_AddTaskFields.NAME):
+            logger.error("Error in post data: No data in %s", _AddTaskFields.NAME.value)
+            raise WebUIError("No task name!")
+
+        time_t = datetime.datetime(
+            year=start_date[0],
+            month=start_date[1],
+            day=start_date[2],
+            hour=start_time[0],
+            minute=start_time[1],
+        )
+
+        time_t = int(time.mktime(time_t.timetuple()))
+        repeat_type, repeat_info = _get_repeat_info(
+            data.get(_AddTaskFields.REPEAT_INFO)
+        )
+
+        jsondata = {
+            "taskName": data.get(_AddTaskFields.NAME),
+            "taskStart": time_t,
+            "taskRepeatInfo": repeat_info,
+            "taskRepeatType": repeat_type,
+        }
+
+        resp = requests.post(
+            url=self._task_post_addr, json=jsondata, verify=False, timeout=10
+        )
+        if resp.status_code != 200:
+            raise RuntimeError(resp.text)
+
+    def _make_app(self) -> Flask:
+        app = Flask(__name__)
+
+        @app.route("/", methods=["POST", "GET"])
+        def create_task():
+            try:
+                if request.method == "GET":
+                    return render_template(INPUT_TASK_HTML)
+                if request.method == "POST":
+                    print(request.form.to_dict())
+                    self.post_add_task(request.form.to_dict())
+                    return render_template(INPUT_TASK_HTML)
+            except WebUIError as err:
+                return str(err)
+            except requests.exceptions.ConnectionError as err:
+                logger.error("ConnectionError: %s", err)
+                return "Failed to connect to TaskTracker API."
+            return 404
+
+        return app
 
 
 def start():
-    app = make_app()
-    serve(app, host="0.0.0.0", port=5000)
+    """
+    Start the TaskTracker webui
+    """
+    config = get_config()
+    webui = TaskTrackerWebUI(config)
+    webui.start()
 
 
 if __name__ == "__main__":
