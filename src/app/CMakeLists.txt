@@ -24,7 +24,10 @@ qt_add_qml_module(tasktracker
 )
 
 target_link_libraries(tasktracker
-                      PRIVATE Qt6::Core Qt6::Quick Qt6::HttpServer ${PROJECT_NAME}lib
+                      PRIVATE
+                      Qt6::Core Qt6::Quick Qt6::HttpServer
+                      ${PROJECT_NAME}lib
+                      simpleini
 )
 
 include(GNUInstallDirs)

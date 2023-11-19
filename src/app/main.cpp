@@ -23,9 +23,12 @@
 #include <QDir>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <simpleini.h>
 
 #include "include/AddTaskServer.h"
 #include "include/TaskListModel.h"
+
+const std::string confpath{ "/etc/tasktracker/tasktracker.ini" };
 
 static void
 add_test_tasks(tasktracker::TaskTracker* tracker)
@@ -49,6 +52,34 @@ add_test_tasks(tasktracker::TaskTracker* tracker)
     }
 }
 
+unsigned
+get_port(const simpleini::SimpleINI& config)
+{
+    unsigned port = 0;
+
+    try {
+        port = config["tasktrackerapi"].get_as<unsigned>("port");
+    } catch (...) {
+        qDebug()
+          << "Value for port not found in config. Using default value 8181";
+        port = 8181;
+    }
+    return port;
+}
+
+simpleini::SimpleINI
+get_config(const std::string& conf_path)
+{
+    simpleini::SimpleINI config;
+    try {
+        config.set_config_file(conf_path);
+
+    } catch (...) {
+        qDebug() << "Configuration not found from" << conf_path;
+    }
+    return config;
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -59,7 +90,9 @@ main(int argc, char* argv[])
     QDir().mkdir(QDir().homePath() + "/.tasktracker/");
     tasktracker::TaskTracker tracker(db_path);
     TaskServer* server = new TaskServer(&tracker, &app);
-    server->start();
+
+    auto config = get_config(confpath);
+    server->start(get_port(config));
 
     add_test_tasks(&tracker);
 

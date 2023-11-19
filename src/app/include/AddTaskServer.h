@@ -58,7 +58,7 @@ class TaskServer : public QObject
     explicit TaskServer(tasktracker::TaskTracker* tracker,
                         QObject* parent = nullptr);
     ~TaskServer();
-    void start();
+    void start(quint16 port);
 
   signals:
     void dataModified();

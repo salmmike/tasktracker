@@ -11,6 +11,7 @@ set (CMAKE_FLAGS "-DINSTALL_GTEST=OFF")
 
 enable_testing()
 
+add_subdirectory(simpleini)
 add_subdirectory(lib)
 add_subdirectory(src)
 add_subdirectory(test)

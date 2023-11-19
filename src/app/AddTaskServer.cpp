@@ -61,9 +61,9 @@ TaskServer::TaskServer(tasktracker::TaskTracker* tracker, QObject* parent)
 TaskServer::~TaskServer() {}
 
 void
-TaskServer::start()
+TaskServer::start(quint16 port)
 {
-    m_server->listen(QHostAddress::Any, TASKSERVER_PORT);
+    m_server->listen(QHostAddress::Any, port);
 }
 
 QHttpServerResponse
