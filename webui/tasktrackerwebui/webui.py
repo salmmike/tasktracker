@@ -82,7 +82,9 @@ class TaskTrackerWebUI:
         Start the webui
         """
         app = self._make_app()
-        serve(app, host="0.0.0.0", port=self._port)
+        host = "0.0.0.0"
+        print(f"Running on {host}:{self._port}")
+        serve(app, host=host, port=self._port)
 
     @property
     def _port(self):
