@@ -22,11 +22,14 @@
 
 #include <QDir>
 #include <QGuiApplication>
+#include <QNetworkInterface>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <simpleini.h>
 
 #include "include/AddTaskServer.h"
 #include "include/TaskListModel.h"
+#include "include/TopOptions.h"
 
 const std::string confpath{ "/etc/tasktracker/tasktracker.ini" };
 
@@ -53,7 +56,7 @@ add_test_tasks(tasktracker::TaskTracker* tracker)
 }
 
 unsigned
-get_port(const simpleini::SimpleINI& config)
+get_server_port(const simpleini::SimpleINI& config)
 {
     unsigned port = 0;
 
@@ -63,6 +66,21 @@ get_port(const simpleini::SimpleINI& config)
         qDebug()
           << "Value for port not found in config. Using default value 8181";
         port = 8181;
+    }
+    return port;
+}
+
+unsigned
+get_webui_port(const simpleini::SimpleINI& config)
+{
+    unsigned port = 0;
+
+    try {
+        port = config["webui"].get_as<unsigned>("port");
+    } catch (...) {
+        qDebug()
+          << "Value for port not found in config. Using default value 8181";
+        port = 5000;
     }
     return port;
 }
@@ -92,13 +110,17 @@ main(int argc, char* argv[])
     TaskServer* server = new TaskServer(&tracker, &app);
 
     auto config = get_config(confpath);
-    server->start(get_port(config));
+    server->start(get_server_port(config));
 
     add_test_tasks(&tracker);
 
     TaskListModel* taskListModel = new TaskListModel(&tracker, &app);
     qmlRegisterSingletonInstance(
       "com.tasktracker.TaskListModel", 1, 0, "TaskListModel", taskListModel);
+
+    TopOptions* topOptions = new TopOptions(&app, get_webui_port(config));
+    qmlRegisterSingletonInstance(
+      "com.tasktracker.TopOptions", 1, 0, "TopOptions", topOptions);
 
     QObject::connect(server,
                      &TaskServer::dataModified,
@@ -107,6 +129,8 @@ main(int argc, char* argv[])
 
     QQmlApplicationEngine engine;
     const QUrl url(u"qrc:/tasktrackerqml/qml/Main.qml"_qs);
+
+    engine.rootContext()->setContextProperty("TopOptions", topOptions);
 
     QObject::connect(
       &engine,

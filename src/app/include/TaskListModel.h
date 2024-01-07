@@ -56,6 +56,7 @@ class TaskListModel : public QAbstractListModel
 
   signals:
     void finishedChanged(int index);
+    void addressChanged();
 
   private:
     tasktracker::TaskTracker* m_tracker;

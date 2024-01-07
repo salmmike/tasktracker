@@ -13,8 +13,10 @@ add_executable(tasktracker
     main.cpp
     include/TaskListModel.h
     include/AddTaskServer.h
+    include/TopOptions.h
     TaskListModel.cpp
     AddTaskServer.cpp
+    TopOptions.cpp
 )
 
 qt_add_qml_module(tasktracker
