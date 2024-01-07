@@ -56,7 +56,7 @@ add_test_tasks(tasktracker::TaskTracker* tracker)
 }
 
 unsigned
-get_server_port(const simpleini::SimpleINI& config)
+get_api_port(const simpleini::SimpleINI& config)
 {
     unsigned port = 0;
 
@@ -110,7 +110,7 @@ main(int argc, char* argv[])
     TaskServer* server = new TaskServer(&tracker, &app);
 
     auto config = get_config(confpath);
-    server->start(get_server_port(config));
+    server->start(get_api_port(config));
 
     add_test_tasks(&tracker);
 
