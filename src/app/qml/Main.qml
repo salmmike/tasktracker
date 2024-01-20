@@ -3,12 +3,15 @@ import QtQuick.Controls
 import com.tasktracker.TaskListModel
 import com.tasktracker.TaskListModel
 
-Window {
+ApplicationWindow {
   id: root
-  width: 640
-  height: 480
   visible: true
-  title: qsTr("Hello World")
+  title: qsTr("Tasktracker")
+  visibility: Window.FullScreen
+  // Without setting these, the window isn't showing correct
+  // even though one might think they aren't needed when FullScreen is set.
+  width: Screen.width
+  height: Screen.height
 
   Rectangle {
     id: topOptionsBar
