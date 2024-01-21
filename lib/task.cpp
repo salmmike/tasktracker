@@ -81,6 +81,7 @@ TaskInstance::get_scheduled_time() const
     const time_t start_datetime = get_scheduled_datetime();
     tm start_datetime_tm = *localtime(&start_datetime);
 
+    start_time.tm_year = start_datetime_tm.tm_year;
     start_time.tm_hour = start_datetime_tm.tm_hour;
     start_time.tm_min = start_datetime_tm.tm_min;
 

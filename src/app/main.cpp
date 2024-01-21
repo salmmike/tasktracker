@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <tasktracklib.h>
+#include <time.h>
 
 #include <QDir>
 #include <QGuiApplication>
@@ -42,6 +43,7 @@ add_test_tasks(tasktracker::TaskTracker* tracker)
 
     for (int i = 1; i < 11; ++i) {
         std::stringstream ss;
+        qDebug() << "Creating task in time:" << ctime(&today);
 
         if (i % 2) {
             today += 60;
@@ -79,7 +81,7 @@ get_webui_port(const simpleini::SimpleINI& config)
         port = config["webui"].get_as<unsigned>("port");
     } catch (...) {
         qDebug()
-          << "Value for port not found in config. Using default value 8181";
+          << "Value for port not found in config. Using default value 5000";
         port = 5000;
     }
     return port;
@@ -142,6 +144,5 @@ main(int argc, char* argv[])
       },
       Qt::QueuedConnection);
     engine.load(url);
-
     return app.exec();
 }

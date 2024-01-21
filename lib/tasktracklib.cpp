@@ -121,6 +121,8 @@ TaskTracker::add_task(const std::string& name,
     task->scheduled_start = mktime(&start_time);
     m_task_db->update_task(task.get());
 
+    std::cout << "Update task to start time:" << ctime(&task->scheduled_start);
+
     m_task_data.push_back(std::move(task));
 
     auto task_ =

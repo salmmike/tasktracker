@@ -13,10 +13,13 @@ ApplicationWindow {
   width: Screen.width
   height: Screen.height
 
+  flags: Qt.WA_AcceptTouchEvents
+
   Rectangle {
     id: topOptionsBar
     height: 50
     color: "#333333"
+
 
     anchors {
       top: parent.top

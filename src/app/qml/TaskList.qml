@@ -39,6 +39,7 @@ Rectangle {
       color: finished ? "green" : skipped ? "orange" : "#1e1e1e"
 
       MouseArea {
+
         id: taskItemMouseArea
         anchors.fill: parent
         onPressAndHold: {

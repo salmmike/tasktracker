@@ -32,6 +32,7 @@ target_link_libraries(tasktracker
                       simpleini
 )
 
+
 include(GNUInstallDirs)
 install(TARGETS tasktracker
     BUNDLE DESTINATION .

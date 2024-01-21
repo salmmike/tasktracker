@@ -1,5 +1,6 @@
 #include "include/TaskListModel.h"
 #include <QDebug>
+#include <time.h>
 
 TaskListModel::TaskListModel(tasktracker::TaskTracker* tracker, QObject* parent)
   : QAbstractListModel{ parent }
@@ -34,6 +35,7 @@ TaskListModel::data(const QModelIndex& index, int role) const
             return QString(current_task->get_name().c_str());
         case TaskStartTimeRole:
             start_time_t = current_task->get_scheduled_time();
+            qDebug() << "Start time of task:" << ctime(&start_time_t);
             start_tm = localtime(&start_time_t);
             if (start_tm->tm_hour < 10) {
                 time_ss << "0";
