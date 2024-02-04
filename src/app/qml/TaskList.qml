@@ -45,6 +45,20 @@ Rectangle {
         onPressAndHold: {
           if (skipped | finished) {
             TaskListModel.setUndone(delegate.index)
+          } else {
+            contextMenu.popup()
+          }
+        }
+        Menu {
+          id: contextMenu
+          MenuItem {
+            text: "Remove"
+            onClicked: TaskListModel.removeTask(delegate.index)
+            font.pixelSize: 30
+          }
+          MenuItem {
+            text: "Cancel"
+            font.pixelSize: 30
           }
         }
       }

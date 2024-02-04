@@ -42,6 +42,8 @@ class TaskInstance
 
     std::string get_uid() const;
 
+    size_t get_parent_id() const;
+
     /// @brief Set the task state to started, update start_time to current
     /// time.
     void start_task();

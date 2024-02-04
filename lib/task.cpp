@@ -42,6 +42,12 @@ TaskInstance::get_uid() const
     return m_data->id;
 }
 
+size_t
+TaskInstance::get_parent_id() const
+{
+    return m_data->parent_id;
+}
+
 void
 TaskInstance::start_task()
 {

@@ -100,6 +100,17 @@ get_config(const std::string& conf_path)
     return config;
 }
 
+bool
+create_test_tasks_set(int argc, char* argv[])
+{
+    for (int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "add-debug-tasks") == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -113,8 +124,9 @@ main(int argc, char* argv[])
 
     auto config = get_config(confpath);
     server->start(get_api_port(config));
-
-    //add_test_tasks(&tracker);
+    if (create_test_tasks_set(argc, argv)) {
+        add_test_tasks(&tracker);
+    }
 
     TaskListModel* taskListModel = new TaskListModel(&tracker, &app);
     qmlRegisterSingletonInstance(

@@ -52,6 +52,7 @@ class TaskListModel : public QAbstractListModel
     void setFinished(int index);
     void setUndone(int index);
     void setSkipped(int index);
+    void removeTask(int index);
     void refresh();
 
   signals:

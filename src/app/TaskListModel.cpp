@@ -84,6 +84,20 @@ TaskListModel::setUndone(int index)
 }
 
 void
+TaskListModel::removeTask(int index)
+{
+    if (index >= 0 && index < m_active_task_instance_list.size()) {
+        m_tracker->delete_task(
+          m_active_task_instance_list.at(index)->get_parent_id());
+    }
+
+    emit dataChanged(createIndex(index, 0),
+                     createIndex(index, 0),
+                     { TaskFinishedRole, TaskSkippedRole, TaskStartedRole });
+    refresh();
+}
+
+void
 TaskListModel::setSkipped(int index)
 {
     if (index >= 0 && index < m_active_task_instance_list.size()) {
