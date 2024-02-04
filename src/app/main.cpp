@@ -114,7 +114,7 @@ main(int argc, char* argv[])
     auto config = get_config(confpath);
     server->start(get_api_port(config));
 
-    add_test_tasks(&tracker);
+    //add_test_tasks(&tracker);
 
     TaskListModel* taskListModel = new TaskListModel(&tracker, &app);
     qmlRegisterSingletonInstance(
