@@ -220,14 +220,20 @@ void
 TaskDatabase::m_make_table()
 {
     m_open_db();
+    // clang-format off
     const std::string str =
       "CREATE TABLE IF NOT EXISTS " + m_table +
-      "(" TASK_ID "        INTEGER PRIMARY KEY, " TASK_NAME
-      "      TEXT NOT NULL, " TASK_BEGINNING " INTEGER, " TASK_STATE
-      "     INTEGER, " TASK_COMMENT "   TEXT, " REPEAT_TYPE
-      "    INTEGER, " REPEAT_INFO "    INTEGER"
+      "("
+      TASK_ID "        INTEGER PRIMARY KEY, "
+      TASK_NAME "      TEXT NOT NULL, "
+      TASK_BEGINNING " INTEGER, "
+      TASK_STATE "     INTEGER, "
+      TASK_COMMENT "   TEXT, "
+      REPEAT_TYPE "    INTEGER, "
+      REPEAT_INFO "    INTEGER"
       ");";
 
+    // clang-format on
     m_execute(str);
     m_close_db();
 }
@@ -410,15 +416,22 @@ void
 TaskInstanceDatabase::m_make_table()
 {
     m_open_db();
+    // clang-format off
     const std::string str =
       "CREATE TABLE IF NOT EXISTS " + m_table +
-      "(" TASK_ID "            STRING PRIMARY KEY, " PARENT_ID
-      "          INTEGER, " TASK_NAME "          TEXT NOT NULL, " TASK_BEGINNING
-      "     INTEGER, " START_TIME "         INTEGER, " FINISH_TIME
-      "        INTEGER, " TIME_SPENT "         INTEGER, " TASK_COMMENT
-      "       TEXT, " TASK_STATE "         INTEGER"
+      "("
+      TASK_ID "         STRING PRIMARY KEY, "
+      PARENT_ID "       INTEGER, "
+      TASK_NAME "       TEXT NOT NULL, "
+      TASK_BEGINNING "  INTEGER, "
+      START_TIME "      INTEGER, "
+      FINISH_TIME "     INTEGER, "
+      TIME_SPENT "      INTEGER, "
+      TASK_COMMENT "    TEXT, "
+      TASK_STATE "      INTEGER"
       ");";
 
+    // clang-format on
     m_execute(str);
     m_close_db();
 }
