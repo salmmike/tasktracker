@@ -1,6 +1,7 @@
 # Task tracker
 
 A program for scheduling and keeping track of daily, weekly or periodic tasks.
+![alt UI view](https://github.com/salmmike/tasktracker/blob/master/tasktracker-ui.png)
 
 ## Structure
 The lib/ directory contains a library for creating and managing tasks.
