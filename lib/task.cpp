@@ -247,10 +247,15 @@ Task::occurs(tm day)
             start_day = mktime(&start_day_tm);
 
             time_t test_day = mktime(&day);
+            if (start_day > test_day) {
+                return false;
+            }
+
             long day_length = 24 * 60 * 60;
 
             long val = (static_cast<long>(std::difftime(test_day, start_day)) /
                         day_length);
+
             return (val % repeat_info == 0);
     }
     return false;

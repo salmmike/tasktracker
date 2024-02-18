@@ -8,6 +8,7 @@ class TopOptions : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString webAddress READ webAddress NOTIFY webAddressChanged)
+
   public:
     explicit TopOptions(QObject* parent, unsigned port);
     QString webAddress();

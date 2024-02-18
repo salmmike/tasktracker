@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-#include <iostream>
 #include <cassert>
 #include <database_driver.h>
+#include <gtest/gtest.h>
+#include <iostream>
 #include <tasktracklib.h>
 
 #define NAME test_tasktracklib
@@ -11,21 +11,23 @@
 
 using namespace tasktracker;
 
-std::string format_date(tm* date, const std::string& str="")
+std::string
+format_date(tm* date, const std::string& str = "")
 {
     char buffer[26];
     strftime(buffer, 26, "%a %Y-%m-%d %H:%M:%S", date);
     return str + buffer;
 }
 
-
-std::string format_date(time_t* date, const std::string& str="")
+std::string
+format_date(time_t* date, const std::string& str = "")
 {
     tm* time_tm = localtime(date);
     return format_date(time_tm, str);
 }
 
-tm add_days(int days, tm date)
+tm
+add_days(int days, tm date)
 {
     time_t time = mktime(&date);
     time += 24 * 60 * 60 * days;
@@ -42,16 +44,19 @@ TEST(NAME, test_create_task)
     TaskTracker tracker(TESTDBFILE);
     tracker.clear();
 
-    tm start_time {};
+    tm start_time{};
     start_time.tm_year = 2023 - 1900;
-    start_time.tm_mday = 1;
+    start_time.tm_mday = 3;
     start_time.tm_hour = 9;
     start_time.tm_min = 30;
 
     tracker.add_task(TESTTASKNAME, RepeatType::WithInterval, 5, start_time);
+
+    start_time.tm_mday = 3;
     auto tasks = tracker.get_task_instances(start_time);
 
     ASSERT_EQ(tasks.size(), 1);
+
     time_t scheduled_time = tasks[0]->get_scheduled_time();
 
     ASSERT_EQ(localtime(&scheduled_time)->tm_hour, start_time.tm_hour);
@@ -64,7 +69,6 @@ TEST(NAME, test_create_task)
     start_time.tm_mday += 1;
     tasks = tracker.get_task_instances(start_time);
     ASSERT_EQ(tasks.size(), 0);
-
 
     tracker.add_task(TESTTASKNAME, RepeatType::NoRepeat, 0, start_time);
     TaskTracker tracker2(TESTDBFILE);
@@ -85,14 +89,28 @@ TEST(NAME, test_task_repeat_interval)
     TaskTracker tracker(TESTDBFILE);
     tracker.clear();
 
-    tm start_time {};
+    tm start_time{};
     start_time.tm_year = 2023 - 1900;
-    start_time.tm_mday = 1;
+    start_time.tm_mday = 3;
     start_time.tm_hour = 9;
     start_time.tm_min = 30;
 
     tracker.add_task(TESTTASKNAME, RepeatType::WithInterval, 5, start_time);
+
+    start_time.tm_mday = 2 + 5;
     auto tasks = tracker.get_task_instances(start_time);
+    ASSERT_EQ(tasks.size(), 0) << TESTTASKNAME
+                               << " occurred day before it should have on the "
+                                  "day before it's second scheduled date.";
+
+    start_time.tm_mday = 2;
+    tasks = tracker.get_task_instances(start_time);
+    ASSERT_EQ(tasks.size(), 0) << TESTTASKNAME
+                               << " occurred day before it should have on the "
+                                  "day before it's first scheduled date.";
+
+    start_time.tm_mday = 3;
+    tasks = tracker.get_task_instances(start_time);
     ASSERT_EQ(tasks.size(), 1);
     auto task = tasks[0];
 
@@ -122,12 +140,13 @@ TEST(NAME, test_task_repeat_weekdays)
     TaskTracker tracker(TESTDBFILE);
     tracker.clear();
 
-    tm start_time {};
+    tm start_time{};
     start_time.tm_year = 2023 - 1900;
     start_time.tm_mday = 1; // start time is Sunday january 1st 2023
     start_time.tm_hour = 9;
 
-    tracker.add_task(TESTTASKNAME, RepeatType::SpecifiedDays, 12345, start_time);
+    tracker.add_task(
+      TESTTASKNAME, RepeatType::SpecifiedDays, 12345, start_time);
     auto tasks = tracker.get_task_instances(start_time);
     ASSERT_EQ(tasks.size(), 0) << "This task should only run on weekdays";
 
@@ -135,9 +154,12 @@ TEST(NAME, test_task_repeat_weekdays)
         start_time = add_days(1, start_time); // set to monday
         tasks = tracker.get_task_instances(start_time);
         if (i < 5) {
-            ASSERT_EQ(tasks.size(), 1) << "this task should run on " << format_date(&start_time);
+            ASSERT_EQ(tasks.size(), 1)
+              << "this task should run on " << format_date(&start_time);
         } else {
-            ASSERT_EQ(tasks.size(), 0) << "this task should not run on day number " << format_date(&start_time);
+            ASSERT_EQ(tasks.size(), 0)
+              << "this task should not run on day number "
+              << format_date(&start_time);
         }
     }
 }
@@ -147,56 +169,64 @@ TEST(NAME, test_task_repeat_monthly)
     TaskTracker tracker(TESTDBFILE);
     tracker.clear();
 
-    tm start_time {};
+    tm start_time{};
     start_time.tm_year = 2023 - 1900;
     start_time.tm_mday = 1; // start time is Sunday january 1st 2023
     start_time.tm_hour = 9;
 
     tracker.add_task(TESTTASKNAME, RepeatType::Monthly, 12, start_time);
     auto tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 0) << "This task should only run on the 12th day of the month";
+    ASSERT_EQ(tasks.size(), 0)
+      << "This task should only run on the 12th day of the month";
 
     start_time = add_days(11, start_time);
     tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 1) << "This task should run on " << format_date(&start_time);
+    ASSERT_EQ(tasks.size(), 1)
+      << "This task should run on " << format_date(&start_time);
 
     start_time = add_days(31, start_time);
     tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 1) << "This task should run on " << format_date(&start_time);
+    ASSERT_EQ(tasks.size(), 1)
+      << "This task should run on " << format_date(&start_time);
 
     start_time = add_days(12, start_time);
     tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 0) << "This task should not run on " << format_date(&start_time);
+    ASSERT_EQ(tasks.size(), 0)
+      << "This task should not run on " << format_date(&start_time);
     tracker.clear();
 }
-
 
 TEST(NAME, test_task_repeat_monthly_day)
 {
     TaskTracker tracker(TESTDBFILE);
     tracker.clear();
 
-    tm start_time {};
+    tm start_time{};
     start_time.tm_year = 2023 - 1900;
     start_time.tm_mday = 1; // start time is Sunday january 1st 2023
     start_time.tm_hour = 9;
 
-    tracker.add_task(TESTTASKNAME, RepeatType::MonthlyDay, 23, start_time); // Second wednesday
+    tracker.add_task(
+      TESTTASKNAME, RepeatType::MonthlyDay, 23, start_time); // Second wednesday
     auto tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 0) << "This task should only run on the 2nd wednesday of the month";
+    ASSERT_EQ(tasks.size(), 0)
+      << "This task should only run on the 2nd wednesday of the month";
 
     start_time = add_days(10, start_time);
     tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 1) << "This task should run on " << format_date(&start_time);
+    ASSERT_EQ(tasks.size(), 1)
+      << "This task should run on " << format_date(&start_time);
 
     start_time = add_days(28, start_time);
     tasks = tracker.get_task_instances(start_time);
-    ASSERT_EQ(tasks.size(), 1) << "This task should run on " << format_date(&start_time);
+    ASSERT_EQ(tasks.size(), 1)
+      << "This task should run on " << format_date(&start_time);
 
     for (int i = 0; i < 20; ++i) {
         start_time = add_days(1, start_time);
         tasks = tracker.get_task_instances(start_time);
-        ASSERT_EQ(tasks.size(), 0) << "This task should not run on " << format_date(&start_time);
+        ASSERT_EQ(tasks.size(), 0)
+          << "This task should not run on " << format_date(&start_time);
     }
 
     tracker.clear();
@@ -208,23 +238,25 @@ TEST(NAME, test_task_lookup_performance)
     TaskTracker tracker(TESTDBFILE);
     tracker.clear();
 
-    tm start_time {};
+    tm start_time{};
     start_time.tm_year = 2023 - 1900;
     start_time.tm_mday = 1; // start time is Sunday january 1st 2023
     start_time.tm_hour = 9;
 
-    tracker.add_task(TESTTASKNAME, RepeatType::MonthlyDay, 23, start_time); // Second wednesday
+    tracker.add_task(
+      TESTTASKNAME, RepeatType::MonthlyDay, 23, start_time); // Second wednesday
     for (int i = 0; i < 10000; ++i) {
         auto tasks = tracker.get_task_instances(start_time);
-        ASSERT_EQ(tasks.size(), 0) << "This task should only run on the 2nd wednesday of the month";
+        ASSERT_EQ(tasks.size(), 0)
+          << "This task should only run on the 2nd wednesday of the month";
     }
 
     start_time = add_days(10, start_time);
     for (int i = 0; i < 10000; ++i) {
         auto tasks = tracker.get_task_instances(start_time);
-        ASSERT_EQ(tasks.size(), 1) << "This task should only run on the 2nd wednesday of the month";
+        ASSERT_EQ(tasks.size(), 1)
+          << "This task should only run on the 2nd wednesday of the month";
     }
-
 
     for (int i = 0; i < 100; ++i) {
         start_time = add_days(1, start_time);
@@ -232,8 +264,8 @@ TEST(NAME, test_task_lookup_performance)
     }
 }
 
-
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
