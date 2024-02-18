@@ -50,15 +50,23 @@ class TaskListModel : public QAbstractListModel
     QHash<int, QByteArray> roleNames() const override;
 
   public slots:
+    ///@brief set task finished.
     void setFinished(int index);
+    ///@brief set task not finished.
     void setUndone(int index);
+    ///@brief set task skipped.
     void setSkipped(int index);
+    ///@brief remove task. Removes all task instances of this task.
     void removeTask(int index);
     void refresh();
+    ///@brief set displayed day to next one.
     void nextDay();
+    ///@brief set displayed day to previous one.
     void previousDay();
+    ///@brief set displayed day to today.
     void setToday();
 
+    ///@brief get date of currently displayed tasks.
     QString date();
 
   signals:
