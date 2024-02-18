@@ -1,7 +1,9 @@
 
 set(CMAKE_AUTOMOC ON)
 
-include_directories(${PROJECT_SOURCE_DIR}/lib/include/)
+include_directories(${PROJECT_SOURCE_DIR}/lib/include/
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+
 find_package(Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
 
 set(CMAKE_CXX_CLANG_TIDY
@@ -31,7 +33,6 @@ target_link_libraries(tasktracker
                       ${PROJECT_NAME}lib
                       simpleini
 )
-
 
 include(GNUInstallDirs ./include)
 install(TARGETS tasktracker
