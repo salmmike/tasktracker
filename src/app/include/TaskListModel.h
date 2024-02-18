@@ -21,6 +21,7 @@
 #define TASKLIST_H
 
 #include <QAbstractListModel>
+#include <QDate>
 #include <tasktracklib.h>
 
 enum TaskListRole
@@ -29,7 +30,7 @@ enum TaskListRole
     TaskStartTimeRole,
     TaskFinishedRole,
     TaskSkippedRole,
-    TaskStartedRole
+    TaskStartedRole,
 };
 
 class TaskListModel : public QAbstractListModel
@@ -56,10 +57,14 @@ class TaskListModel : public QAbstractListModel
     void refresh();
     void nextDay();
     void previousDay();
+    void setToday();
+
+    QString date();
 
   signals:
     void finishedChanged(int index);
     void addressChanged();
+    void dateChanged(QString newDate);
 
   private:
     tasktracker::TaskTracker* m_tracker;
@@ -67,6 +72,7 @@ class TaskListModel : public QAbstractListModel
     QList<tasktracker::TaskInstance*> m_active_task_instance_list;
 
     time_t m_date;
+    QDate currentDate();
 };
 
 #endif /* TASKLIST_H */

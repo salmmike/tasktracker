@@ -6,9 +6,7 @@ TaskListModel::TaskListModel(tasktracker::TaskTracker* tracker, QObject* parent)
   : QAbstractListModel{ parent }
   , m_tracker{ tracker }
 {
-    auto now = std::chrono::system_clock::now();
-    m_date = std::chrono::system_clock::to_time_t(now);
-    populate();
+    setToday();
 }
 
 int
@@ -35,7 +33,6 @@ TaskListModel::data(const QModelIndex& index, int role) const
             return QString(current_task->get_name().c_str());
         case TaskStartTimeRole:
             start_time_t = current_task->get_scheduled_time();
-            qDebug() << "Start time of task:" << ctime(&start_time_t);
             start_tm = localtime(&start_time_t);
             if (start_tm->tm_hour < 10) {
                 time_ss << "0";
@@ -148,6 +145,7 @@ void
 TaskListModel::nextDay()
 {
     m_date += 24 * 60 * 60;
+    emit dateChanged(date());
     populate();
 }
 
@@ -155,5 +153,30 @@ void
 TaskListModel::previousDay()
 {
     m_date -= 24 * 60 * 60;
+    emit dateChanged(date());
     populate();
+}
+
+void
+TaskListModel::setToday()
+{
+    auto now = std::chrono::system_clock::now();
+    m_date = std::chrono::system_clock::to_time_t(now);
+    emit dateChanged(date());
+    populate();
+}
+
+QString
+TaskListModel::date()
+{
+    auto now_date = currentDate();
+    return now_date.toString() + " W" + QString::number(now_date.weekNumber());
+}
+
+QDate
+TaskListModel::currentDate()
+{
+    tm date = *localtime(&m_date);
+
+    return QDate{ date.tm_year + 1900, date.tm_mon + 1, date.tm_mday };
 }

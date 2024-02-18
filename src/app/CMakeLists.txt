@@ -33,7 +33,7 @@ target_link_libraries(tasktracker
 )
 
 
-include(GNUInstallDirs)
+include(GNUInstallDirs ./include)
 install(TARGETS tasktracker
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

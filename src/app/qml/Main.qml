@@ -17,9 +17,8 @@ ApplicationWindow {
 
   Rectangle {
     id: topOptionsBar
-    height: 50
+    height: 70
     color: "#333333"
-
 
     anchors {
       top: parent.top
@@ -36,12 +35,33 @@ ApplicationWindow {
         top: parent.top
         left: parent.left
         right: parent.right
-        bottom: parent.bottom
       }
       verticalAlignment: Text.AlignVCenter
       horizontalAlignment: Text.AlignHCenter
     }
 
+    Text {
+      id: dateText
+      text: TaskListModel.date()
+      color: "white"
+      font.pointSize: 20
+      anchors {
+        top: addressText.bottom
+        left: parent.left
+        right: parent.right
+        bottom: parent.bottom
+      }
+      topPadding: 10
+      verticalAlignment: Text.AlignVCenter
+      horizontalAlignment: Text.AlignHCenter
+
+      Connections {
+        target: TaskListModel
+        function onDateChanged(date) {
+          dateText.text = date
+        }
+      }
+    }
   }
 
   Rectangle {
