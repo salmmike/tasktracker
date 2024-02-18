@@ -53,7 +53,7 @@ add_test_tasks(tasktracker::TaskTracker* tracker)
         }
         ss << "test task " << i;
         tracker->add_task(
-          ss.str(), tasktracker::RepeatType::NoRepeat, 0, today);
+          ss.str(), tasktracker::RepeatType::WithInterval, 2, today);
     }
 }
 

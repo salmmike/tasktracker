@@ -54,6 +54,8 @@ class TaskListModel : public QAbstractListModel
     void setSkipped(int index);
     void removeTask(int index);
     void refresh();
+    void nextDay();
+    void previousDay();
 
   signals:
     void finishedChanged(int index);

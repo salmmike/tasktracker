@@ -10,12 +10,13 @@ Rectangle {
 
   color: "#333333"
 
+
   ListView {
     id: listview
 
     anchors {
       top: parent.top
-      bottom: parent.bottom
+      bottom: nextDay.top
       left: parent.left
       right: parent.right
     }
@@ -118,5 +119,35 @@ Rectangle {
         }
       }
     }
+  }
+  Button {
+    id: nextDay
+    text: 'Next day'
+    padding: 15
+    onClicked: {
+      TaskListModel.nextDay()
+    }
+
+    anchors {
+      bottom: parent.bottom
+      right: parent.right
+    }
+
+    width: parent.width/3
+    height: 70
+  }
+  Button {
+    id: previousDay
+    text: 'Prevous day'
+    padding: 15
+    onClicked: {
+      TaskListModel.previousDay()
+    }
+    anchors {
+      bottom: parent.bottom
+      left: parent.left
+    }
+    width: parent.width/3
+    height: 70
   }
 }

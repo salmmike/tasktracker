@@ -112,6 +112,8 @@ TaskListModel::setSkipped(int index)
 void
 TaskListModel::refresh()
 {
+    auto now = std::chrono::system_clock::now();
+    m_date = std::chrono::system_clock::to_time_t(now);
     populate();
 }
 
@@ -140,4 +142,18 @@ TaskListModel::roleNames() const
     result[TaskStartedRole] = "started";
 
     return result;
+}
+
+void
+TaskListModel::nextDay()
+{
+    m_date += 24 * 60 * 60;
+    populate();
+}
+
+void
+TaskListModel::previousDay()
+{
+    m_date -= 24 * 60 * 60;
+    populate();
 }
