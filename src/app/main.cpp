@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <scheduler.h>
 #include <tasktracklib.h>
 #include <time.h>
 
@@ -26,9 +27,11 @@
 #include <QNetworkInterface>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QTimer>
 #include <simpleini.h>
 
 #include "include/AddTaskServer.h"
+#include "include/DeviceListModel.h"
 #include "include/TaskListModel.h"
 #include "include/TopOptions.h"
 
@@ -111,6 +114,26 @@ create_test_tasks_set(int argc, char* argv[])
     return false;
 }
 
+std::unique_ptr<BoredomScheduler>
+make_boredom_scheduler(const simpleini::SimpleINI& config)
+{
+    auto scheduler = std::make_unique<BoredomScheduler>();
+    try {
+        auto section = config["Boredom scheduler"];
+        scheduler->set_config_file(section["configpath"]);
+    } catch (std::out_of_range& err) {
+        qDebug() << "No 'Boredom scheduler' configuration.";
+    }
+    return scheduler;
+}
+
+void
+refresh_device_list(void* data)
+{
+    auto object = static_cast<QuickNotify*>(data);
+    object->notify_slot();
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -121,8 +144,14 @@ main(int argc, char* argv[])
     QDir().mkdir(QDir().homePath() + "/.tasktracker/");
     tasktracker::TaskTracker tracker(db_path);
     TaskServer* server = new TaskServer(&tracker, &app);
+    QuickNotify* notifyer = new QuickNotify(&app);
+    QTimer* notify_timer = new QTimer(&app);
+
+    notify_timer->setSingleShot(true);
 
     auto config = get_config(confpath);
+    auto scheduler = make_boredom_scheduler(config);
+
     server->start(get_api_port(config));
     if (create_test_tasks_set(argc, argv)) {
         add_test_tasks(&tracker);
@@ -132,14 +161,37 @@ main(int argc, char* argv[])
     qmlRegisterSingletonInstance(
       "com.tasktracker.TaskListModel", 1, 0, "TaskListModel", taskListModel);
 
-    TopOptions* topOptions = new TopOptions(&app, get_webui_port(config));
+    TopOptions* topOptions =
+      new TopOptions(&app, get_webui_port(config), scheduler.get());
     qmlRegisterSingletonInstance(
       "com.tasktracker.TopOptions", 1, 0, "TopOptions", topOptions);
+
+    DeviceListModel* deviceListModel =
+      new DeviceListModel(scheduler.get(), &app);
+
+    qmlRegisterSingletonInstance("com.tasktracker.DeviceListModel",
+                                 1,
+                                 0,
+                                 "DeviceListModel",
+                                 deviceListModel);
 
     QObject::connect(server,
                      &TaskServer::dataModified,
                      taskListModel,
                      &TaskListModel::refresh);
+
+    scheduler->set_device_event_cb(refresh_device_list);
+    scheduler->set_event_cb_data(notifyer);
+
+    QObject::connect(notifyer,
+                     &QuickNotify::notify,
+                     notify_timer,
+                     [notify_timer]() { notify_timer->start(200); });
+
+    QObject::connect(notify_timer,
+                     &QTimer::timeout,
+                     deviceListModel,
+                     &DeviceListModel::refresh);
 
     QQmlApplicationEngine engine;
     const QUrl url(u"qrc:/tasktrackerqml/qml/Main.qml"_qs);

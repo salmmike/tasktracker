@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import com.tasktracker.TaskListModel
-import com.tasktracker.TaskListModel
+import com.tasktracker.DeviceListModel
 
 ApplicationWindow {
   id: root
@@ -63,12 +63,34 @@ ApplicationWindow {
       }
     }
   }
+  Rectangle {
+    id: boredSection
+
+    height: 70
+
+    anchors {
+      top: topOptionsBar.bottom
+      left: parent.left
+      right: parent.right
+    }
+
+    color: "#1e1e1e"
+
+    DeviceList {
+      id: deviceList
+      anchors {
+        verticalCenter: parent.verticalCenter
+        left: parent.left
+        right: parent.right
+      }
+    }
+  }
 
   Rectangle {
     id: mainSection
 
     anchors {
-      top: topOptionsBar.bottom
+      top: boredSection.bottom
       bottom: parent.bottom
       left: parent.left
       right: parent.right

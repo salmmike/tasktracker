@@ -6,17 +6,15 @@ include_directories(${PROJECT_SOURCE_DIR}/lib/include/
 
 find_package(Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
 
-set(CMAKE_CXX_CLANG_TIDY
-    clang-tidy;
-    -header-filter=.;
-    -extra-arg=-std=c++20)
-
 add_executable(tasktracker
     main.cpp
     include/TaskListModel.h
+    include/DeviceListModel.h
     include/AddTaskServer.h
     include/TopOptions.h
+
     TaskListModel.cpp
+    DeviceListModel.cpp
     AddTaskServer.cpp
     TopOptions.cpp
 )
@@ -24,7 +22,7 @@ add_executable(tasktracker
 qt_add_qml_module(tasktracker
     URI tasktrackerqml
     VERSION 1.0
-    QML_FILES qml/Main.qml qml/TaskItem.qml qml/TaskList.qml
+    QML_FILES qml/Main.qml qml/TaskItem.qml qml/TaskList.qml qml/DeviceList.qml
 )
 
 target_link_libraries(tasktracker
@@ -32,6 +30,7 @@ target_link_libraries(tasktracker
                       Qt6::Core Qt6::Quick Qt6::HttpServer
                       ${PROJECT_NAME}lib
                       simpleini
+                      boredomlock
 )
 
 include(GNUInstallDirs ./include)

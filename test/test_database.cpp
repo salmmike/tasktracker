@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-#include <iostream>
 #include <cassert>
 #include <database_driver.h>
+#include <gtest/gtest.h>
+#include <iostream>
 #include <task_data.h>
 
 #define NAME database_driver
@@ -15,7 +15,7 @@ TEST(NAME, test_create_database)
         db.init();
         db.create_task(TESTTASKNAME);
         db.clear();
-    } catch (tasktracker::DatabaseErr &err) {
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
@@ -28,8 +28,9 @@ TEST(NAME, test_get_task)
         db.clear();
         db.create_task(TESTTASKNAME);
         auto tasks = db.get_tasks();
-        ASSERT_TRUE(tasks[0]->name == TESTTASKNAME) << "created task name isn't what it should be.";
-    } catch (tasktracker::DatabaseErr &err) {
+        ASSERT_TRUE(tasks[0]->name == TESTTASKNAME)
+          << "created task name isn't what it should be.";
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
@@ -49,7 +50,7 @@ TEST(NAME, test_clear_db)
 
         tasks = db.get_tasks();
         ASSERT_EQ(tasks.size(), 0);
-    } catch (tasktracker::DatabaseErr &err) {
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
@@ -73,9 +74,9 @@ TEST(NAME, test_delete_task)
         for (int i = 0; i < task_count; ++i) {
             db.delete_task(tasks[i].get());
             auto after_delete = db.get_tasks();
-            ASSERT_EQ(after_delete.size(), task_count - (i+1));
+            ASSERT_EQ(after_delete.size(), task_count - (i + 1));
         }
-    } catch (tasktracker::DatabaseErr &err) {
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
@@ -97,7 +98,7 @@ TEST(NAME, test_task_creation)
             ASSERT_EQ(tasks[i]->name, TESTTASKNAME);
         }
         db.clear();
-    } catch (tasktracker::DatabaseErr &err) {
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
@@ -114,7 +115,6 @@ TEST(NAME, test_task_update)
         int new_start = 100;
         int new_repeat_info = 150;
         auto new_repeat_type = tasktracker::RepeatType::WithInterval;
-
 
         db.clear();
         int id = db.create_task(TESTTASKNAME);
@@ -142,7 +142,7 @@ TEST(NAME, test_task_update)
         ASSERT_EQ(task2->comment, new_comment);
         ASSERT_EQ(task2->repeat_type, new_repeat_type);
         db.clear();
-    } catch (tasktracker::DatabaseErr &err) {
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
@@ -159,7 +159,8 @@ TEST(NAME, test_taskinstance_update)
         const time_t new_finish = 1234;
         const std::chrono::seconds new_time_spent = std::chrono::seconds(50);
         const std::string new_comment = "test comment";
-        const tasktracker::TaskState new_state = tasktracker::TaskState::Finished;
+        const tasktracker::TaskState new_state =
+          tasktracker::TaskState::Finished;
 
         auto task_instance = db.get_task(test_task_id);
         task_instance->scheduled_start = new_scheduled_start;
@@ -176,12 +177,13 @@ TEST(NAME, test_taskinstance_update)
         ASSERT_EQ(task_instance2->comment, new_comment);
         ASSERT_EQ(task_instance2->state, new_state);
         db.clear();
-    } catch (tasktracker::DatabaseErr &err) {
+    } catch (tasktracker::DatabaseErr& err) {
         FAIL() << "An error was thrown: " << err.what();
     }
 }
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
