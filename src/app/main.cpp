@@ -145,9 +145,6 @@ main(int argc, char* argv[])
     tasktracker::TaskTracker tracker(db_path);
     TaskServer* server = new TaskServer(&tracker, &app);
     QuickNotify* notifyer = new QuickNotify(&app);
-    QTimer* notify_timer = new QTimer(&app);
-
-    notify_timer->setSingleShot(true);
 
     auto config = get_config(confpath);
     auto scheduler = make_boredom_scheduler(config);
@@ -185,11 +182,6 @@ main(int argc, char* argv[])
 
     QObject::connect(notifyer,
                      &QuickNotify::notify,
-                     notify_timer,
-                     [notify_timer]() { notify_timer->start(200); });
-
-    QObject::connect(notify_timer,
-                     &QTimer::timeout,
                      deviceListModel,
                      &DeviceListModel::refresh);
 
