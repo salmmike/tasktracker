@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import com.tasktracker.TaskListModel
 import com.tasktracker.DeviceListModel
+import com.tasktracker.WeatherListModel
 
 ApplicationWindow {
   id: root
@@ -17,7 +18,7 @@ ApplicationWindow {
 
   Rectangle {
     id: topOptionsBar
-    height: 70
+    height: 90
     color: "#333333"
 
     anchors {
@@ -52,6 +53,7 @@ ApplicationWindow {
         bottom: parent.bottom
       }
       topPadding: 10
+      bottomPadding: 20
       verticalAlignment: Text.AlignVCenter
       horizontalAlignment: Text.AlignHCenter
 
@@ -63,13 +65,38 @@ ApplicationWindow {
       }
     }
   }
+
+  Rectangle {
+    id: weatherSection
+
+    height: 120
+
+    anchors {
+      top: topOptionsBar.bottom
+      left: parent.left
+      right: parent.right
+    }
+
+    color: "#1e1e1e"
+
+    WeatherList {
+      id: weatherList
+      anchors {
+        verticalCenter: parent.verticalCenter
+        left: parent.left
+        right: parent.right
+      }
+    }
+  }
+
+
   Rectangle {
     id: boredSection
 
     height: 70
 
     anchors {
-      top: topOptionsBar.bottom
+      top: weatherSection.bottom
       left: parent.left
       right: parent.right
     }

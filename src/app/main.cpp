@@ -34,6 +34,7 @@
 #include "include/DeviceListModel.h"
 #include "include/TaskListModel.h"
 #include "include/TopOptions.h"
+#include "include/WeatherListModel.h"
 
 const std::string confpath{ "/etc/tasktracker/tasktracker.ini" };
 
@@ -134,6 +135,42 @@ refresh_device_list(void* data)
     object->notify_slot();
 }
 
+WeatherListModel* make_weather_list(QObject* parent, const simpleini::SimpleINI& config)
+{
+    std::string program;
+    std::string city;
+    int tmzone;
+
+    try {
+        program = config["Weather"]["program"];
+    } catch (...) {
+        qWarning() << "Weather program not set.";
+        program = "/opt/getweather";
+    }
+
+    try {
+        city = config["Weather"]["city"];
+    } catch (...) {
+        qWarning() << "Weather city not set.";
+        city = "nokia";
+    }
+
+    try {
+        tmzone = config["Weather"].get_as<int>("timezone");
+    } catch (...) {
+        qWarning() << "Weather timezone not set.";
+        tmzone = 3;
+    }
+    qDebug() << "Weather settings:";
+    qDebug() << "Program:" << program;
+    qDebug() << "City:" << city;
+    qDebug() << "tmzone:" << tmzone;
+
+    WeatherListModel* weatherListModel =
+      new WeatherListModel(program, city, tmzone, parent);
+    return weatherListModel;
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -171,6 +208,14 @@ main(int argc, char* argv[])
                                  0,
                                  "DeviceListModel",
                                  deviceListModel);
+
+    WeatherListModel* weatherListModel = make_weather_list(&app, config);
+    qmlRegisterSingletonInstance("com.tasktracker.WeatherListModel",
+                                 1,
+                                 0,
+                                 "WeatherListModel",
+                                 weatherListModel);
+    weatherListModel->populate();
 
     QObject::connect(server,
                      &TaskServer::dataModified,

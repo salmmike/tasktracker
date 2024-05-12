@@ -1,5 +1,5 @@
-#ifndef DEVICELISTMODEL_H
-#define DEVICELISTMODEL_H
+#ifndef WEATHERLISTMODEL_H
+#define WEATHERLISTMODEL_H
 /*
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,31 +24,25 @@
 #include <QTimer>
 #include <scheduler.h>
 
-class QuickNotify : public QObject
+enum WeatherListRole
 {
-    Q_OBJECT
-  public:
-    explicit QuickNotify(QObject* parent = nullptr)
-      : QObject(parent){};
-    void notify_slot() { emit notify(); };
-
-  signals:
-    void notify();
+    TimeRole = Qt::UserRole + 1,
+    DateRole,
+    TemperatureRole,
+    RainRole,
+    WindRole,
+    CloudsRole,
 };
 
-enum DeviceListRole
-{
-    DeviceNameRole = Qt::UserRole + 1,
-    DeviceAlarmRole,
-};
-
-class DeviceListModel : public QAbstractListModel
+class WeatherListModel : public QAbstractListModel
 {
     Q_OBJECT
 
   public:
-    explicit DeviceListModel(BoredomScheduler* scheduler,
-                             QObject* parent = nullptr);
+    explicit WeatherListModel(std::filesystem::path weather_csv_program,
+                              std::string location = "nokia",
+                              int utc_diff = 3,
+                              QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
@@ -58,21 +52,14 @@ class DeviceListModel : public QAbstractListModel
 
     QHash<int, QByteArray> roleNames() const override;
 
-  public slots:
-    ///@brief Snooze device.
-    void setSnooze(int index);
-    void refresh();
-    bool isAlarm() const;
-
-  signals:
-    void deviceChanged(QString newDate);
-    void isAlarmChanged(bool alarm);
-
   private:
-    BoredomScheduler* m_scheduler;
-    QList<QString> m_devices;
     QTimer* m_timer;
-    int m_snooze_time{ 600 };
+    std::filesystem::path m_weather_program;
+    std::string m_location;
+    int m_utc_diff;
+    int m_refresh_time_s{ 3600 };
+    std::string m_api_output;
+    std::vector<std::vector<std::string>> m_api_output_lines;
 };
 
 #endif /* DEVICELISTMODEL_H */

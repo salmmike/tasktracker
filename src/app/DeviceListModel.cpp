@@ -22,6 +22,9 @@ DeviceListModel::DeviceListModel(BoredomScheduler* scheduler, QObject* parent)
   , m_scheduler{ scheduler }
   , m_devices(unconnected_devices(scheduler))
 {
+    m_timer = new QTimer(this);
+    connect(m_timer, &QTimer::timeout, this, &DeviceListModel::refresh);
+    m_timer->setSingleShot(true);
 }
 
 int
@@ -52,7 +55,11 @@ void
 DeviceListModel::populate()
 {
     beginResetModel();
+    bool old_alarmv = isAlarm();
     m_devices = unconnected_devices(m_scheduler);
+    if (isAlarm() != old_alarmv) {
+        emit isAlarmChanged(isAlarm());
+    }
     endResetModel();
 }
 
@@ -81,6 +88,8 @@ void
 DeviceListModel::setSnooze(int index)
 {
     Q_UNUSED(index);
-    m_scheduler->snooze(5);
+    m_scheduler->snooze(m_snooze_time);
+    m_timer->setInterval(m_snooze_time * 1000 + 5000);
+    m_timer->start();
     refresh();
 }
