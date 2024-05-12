@@ -34,8 +34,8 @@ Rectangle {
       required property string clouds
       required property string timestamp
 
-      width: listview.width / 10
-      height: 200
+      width: 250
+      height: 120
 
       Text {
         id: dateText
