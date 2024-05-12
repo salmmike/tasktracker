@@ -23,7 +23,7 @@ read_weather(const std::string& command,
 }
 
 static std::vector<std::string>
-split(std::string parsestr, std::string delimiter, bool has_header=false)
+split(std::string parsestr, std::string delimiter, bool has_header = false)
 {
     std::vector<std::string> output_lines;
 
@@ -89,7 +89,7 @@ WeatherListModel::rowCount(const QModelIndex& parent) const
 }
 
 QString
-get_rain_ammount(const std::vector<std::vector<std::string>> &data, int index)
+get_rain_ammount(const std::vector<std::vector<std::string>>& data, int index)
 {
     float previous = 0;
     if (index > 0) {
@@ -97,7 +97,7 @@ get_rain_ammount(const std::vector<std::vector<std::string>> &data, int index)
     }
     float current = std::atof(data.at(index).at(4).c_str());
     QString text;
-    QTextStream stream{&text};
+    QTextStream stream{ &text };
     stream.setRealNumberPrecision(2);
     stream << (current - previous);
 
@@ -108,7 +108,7 @@ QVariant
 WeatherListModel::data(const QModelIndex& index, int role) const
 {
     // time,date,temperature,rain,clouds,wind,
-    if (index.row() >= m_api_output.size() - 1) {
+    if (index.row() >= m_api_output_lines.size() - 1) {
         return QVariant();
     }
     if (m_api_output_lines.at(index.row()).size() < 7) {
@@ -118,16 +118,13 @@ WeatherListModel::data(const QModelIndex& index, int role) const
     switch (role) {
         case TimeRole:
             return QString::fromStdString(
-              m_api_output_lines.at(index.row()).at(1)
-              );
+              m_api_output_lines.at(index.row()).at(1));
         case DateRole:
             return QString::fromStdString(
-              m_api_output_lines.at(index.row()).at(2)
-              );
+              m_api_output_lines.at(index.row()).at(2));
         case TemperatureRole:
             return QString::fromStdString(
-              m_api_output_lines.at(index.row()).at(3)
-              );
+              m_api_output_lines.at(index.row()).at(3));
         case RainRole:
             return get_rain_ammount(m_api_output_lines, index.row());
         case CloudsRole:
@@ -135,7 +132,7 @@ WeatherListModel::data(const QModelIndex& index, int role) const
               m_api_output_lines.at(index.row()).at(5));
         case WindRole:
             return QString::fromStdString(
-                m_api_output_lines.at(index.row()).at(6));
+              m_api_output_lines.at(index.row()).at(6));
         default:
             return QVariant();
     }

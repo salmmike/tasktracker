@@ -135,7 +135,8 @@ refresh_device_list(void* data)
     object->notify_slot();
 }
 
-WeatherListModel* make_weather_list(QObject* parent, const simpleini::SimpleINI& config)
+WeatherListModel*
+make_weather_list(QObject* parent, const simpleini::SimpleINI& config)
 {
     std::string program;
     std::string city;
